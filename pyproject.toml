@@ -61,3 +61,13 @@ line-length = 120
 
 [tool.coverage.run]
 omit = ["tests/*"]
+
+[project.scripts]
+# usage: uv run train
+train = "arginator_protein_classifier.train:train"
+
+# usage: uv run evaluate
+evaluate = "arginator_protein_classifier.evaluate:evaluate"
+
+# usage: uv run data
+data = "arginator_protein_classifier.data:main"
