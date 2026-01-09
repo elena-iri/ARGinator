@@ -30,7 +30,7 @@ distlib==0.4.0
     # via virtualenv
 dotenv==0.9.9
     # via arginator-protein-classifier
-fastapi==0.115.6
+fastapi==0.128.0
     # via arginator-protein-classifier
 filelock==3.20.2
     # via
