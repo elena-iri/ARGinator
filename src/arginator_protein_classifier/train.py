@@ -17,7 +17,7 @@ def train(
     batch_size: int = 32, 
     epochs: int = 5,
     model_path: str = "models/model.pth",
-    data_path: str = "data"
+    data_path: str = ".data"
 ) -> None:
     """
     Train the model. 
