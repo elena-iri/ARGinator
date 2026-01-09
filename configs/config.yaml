@@ -1,0 +1,10 @@
+hyperparameters:
+    batch_size: 64
+    lr: 1e-4
+    epochs: 50
+    input_dim: 1024
+    output_dim: 2
+    
+    
+
+    
