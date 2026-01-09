@@ -16,5 +16,6 @@ COPY data/ data/
 
 RUN uv sync --locked --no-cache --no-install-project
 
-
+ENTRYPOINT = ["uv", "run", "src/arginator_protein_classifier/train.py"]
+# The -u flag ensures that any output goes to the terminal and doesn't stay in the container (if so use "docker logs")
 ENTRYPOINT ["uv", "run", "src/arginator_protein_classifier/train.py"]
