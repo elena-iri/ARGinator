@@ -2,6 +2,10 @@
 
 Protein Language Model for classification as part of DTU MLOps course (02476) project by group 16.
 
+## Project description
+*   **Overall Goal:**
+*   **
+
 ## Project structure
 
 The directory structure of the project looks like this:
