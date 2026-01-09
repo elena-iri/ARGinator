@@ -95,8 +95,8 @@ def get_dataloaders(data_path, batch_size=32, split_ratios=(0.7, 0.15, 0.15)):
 # Typer Command
 @app.command()
 def main(
-    data_path: str = ".data", 
-    output_folder: str = ".data", 
+    data_path: str = "data", 
+    output_folder: str = "data", 
     force: bool = typer.Option(False, "--force", "-f", help="Force regenerate the processed data.")
 ):
     """
