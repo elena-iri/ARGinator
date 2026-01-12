@@ -1,15 +1,14 @@
-from dotenv import load_dotenv
-import glob
-import os
-import numpy as np
-from pathlib import Path
-import torch
-import typer
+import logging
 import h5py
-from torch.utils.data import Dataset, DataLoader, ConcatDataset, random_split
+import torch
+import hydra
+import os
+from pathlib import Path
+from torch.utils.data import Dataset, DataLoader, random_split
+from omegaconf import DictConfig
 
-# Initialize Typer
-app = typer.Typer()
+# Initialize Logger
+log = logging.getLogger(__name__)
 
 class MyDataset(Dataset):
     """My custom dataset."""
@@ -20,11 +19,10 @@ class MyDataset(Dataset):
         self.processed_file = self.output_folder / "processed_data.pt"
         self.data = []
 
-        # Logic Update: Process if missing OR if force_process is True
         if force_process or not self.processed_file.exists():
             self.preprocess(self.output_folder)
         
-        print(f"Loading data from {self.processed_file}")
+        log.info(f"Loading data from {self.processed_file}")
         self.data = torch.load(self.processed_file)
 
     def __len__(self) -> int:
@@ -39,19 +37,17 @@ class MyDataset(Dataset):
         output_folder.mkdir(parents=True, exist_ok=True)
         all_samples = []
         
-        # Find all .h5 files
-        h5_files = list(self.data_path.glob("*.h5"))
+        # sort the list to ensure deterministic order 
+        h5_files = sorted(list(self.data_path.glob("*.h5")))
         
         if not h5_files:
-            print(f"No .h5 files found in {self.data_path}")
+            log.warning(f"No .h5 files found in {self.data_path}")
             return
 
-        print(f"Found {len(h5_files)} H5 files. Processing...")
+        log.info(f"Found {len(h5_files)} H5 files. Processing...")
 
         for file_path in h5_files:
-            # Labeling Logic: 0 if 'non', else 1
             label = 0 if "non" in file_path.name else 1
-            
             try:
                 with h5py.File(file_path, 'r') as hf:
                     for key in hf.keys():
@@ -59,16 +55,15 @@ class MyDataset(Dataset):
                         embedding = torch.from_numpy(data_numpy).float()
                         all_samples.append((embedding, label))
             except Exception as e:
-                print(f"Error reading {file_path}: {e}")
+                log.error(f"Error reading {file_path}: {e}")
 
-        # Save to disk
         torch.save(all_samples, output_folder / "processed_data.pt")
-        print(f"Saved {len(all_samples)} samples to {output_folder / 'processed_data.pt'}")
+        log.info(f"Saved {len(all_samples)} samples to {output_folder / 'processed_data.pt'}")
 
-def get_dataloaders(data_path, batch_size=32, split_ratios=(0.7, 0.15, 0.15)):
+# CRITICAL CHANGE: Accept seed argument
+def get_dataloaders(data_path, batch_size=32, split_ratios=(0.7, 0.15, 0.15), seed=42):
     """Creates train, val, and test dataloaders."""
-    # Instantiate dataset (will load cached data automatically)
-    full_dataset = MyDataset(data_path)
+    full_dataset = MyDataset(Path(data_path))
     total_size = len(full_dataset)
     
     train_ratio, val_ratio, test_ratio = split_ratios
@@ -76,10 +71,10 @@ def get_dataloaders(data_path, batch_size=32, split_ratios=(0.7, 0.15, 0.15)):
     val_size = int(val_ratio * total_size)
     test_size = total_size - train_size - val_size
     
-    print(f"Total samples: {total_size}")
-    print(f"Splitting into: Train ({train_size}), Val ({val_size}), Test ({test_size})")
+    log.info(f"Splitting {total_size} samples: Train({train_size}), Val({val_size}), Test({test_size}) with seed {seed}")
 
-    generator = torch.Generator().manual_seed(42) 
+    # Use the passed seed for the random split
+    generator = torch.Generator().manual_seed(seed) 
     train_dataset, val_dataset, test_dataset = random_split(
         full_dataset, 
         [train_size, val_size, test_size],
@@ -92,20 +87,35 @@ def get_dataloaders(data_path, batch_size=32, split_ratios=(0.7, 0.15, 0.15)):
     
     return train_loader, val_loader, test_loader
 
-# Typer Command
-@app.command()
-def main(
-    data_path: str = "data", 
-    output_folder: str = "data", 
-    force: bool = typer.Option(False, "--force", "-f", help="Force regenerate the processed data.")
-):
+
+# Get path to configs (Dynamic Absolute Path)
+current_file_path = os.path.abspath(__file__)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
+config_path = os.path.join(project_root, "configs")
+
+# Hydra Main
+@hydra.main(version_base=None, config_path=config_path, config_name="train_config")
+def main(cfg: DictConfig):
+
     """
     Process raw .h5 data into a single .pt file.
     """
-    print(f"Processing data from {data_path}...")
-    # We trigger the init with the force flag
-    MyDataset(Path(data_path), Path(output_folder), force_process=force)
-    print("Data processing complete.")
+    data_path = Path(cfg.paths.data)
+    force = cfg.processing.force
+    seed = cfg.processing.seed
+    
+    # Set seed for any global operations
+    torch.manual_seed(seed)
+    
+    log.info(f"Processing data from {data_path}...")
+    
+    # Ensure folder exists
+    data_path.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize dataset
+    MyDataset(data_path, output_folder=data_path, force_process=force)
+    
+    log.info("Data processing complete.")
 
 if __name__ == "__main__":
-    app()
+    main()
