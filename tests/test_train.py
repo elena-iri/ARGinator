@@ -78,5 +78,3 @@ def test_train(mock_plt, mock_get_dataloaders, mock_hydra_config, tmp_path):
     # Verify it was called with the correct path
     args, _ = mock_fig.savefig.call_args
     assert str(expected_plot_path) in str(args[0]), f"Plot saved to wrong path: {args[0]}"
-
-    
