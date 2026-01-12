@@ -1,10 +1,12 @@
 import torch
+import wandb
 import hydra
 import logging
 import os
 import matplotlib.pyplot as plt
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.hydra_config import HydraConfig
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 from arginator_protein_classifier.model import Model
 from arginator_protein_classifier.data import get_dataloaders
@@ -30,6 +32,16 @@ def train(cfg: DictConfig) -> None:
     log.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
     
     hparams = cfg.experiment
+
+    run = wandb.init(
+        project="arginator_protein_classifier",
+        config={"lr": hparams.lr,
+                "dropout_rate": hparams.dropout_rate,
+                "batch_size": hparams.batch_size,
+                "epochs": hparams.epochs,
+                "seed": hparams.seed},
+    )
+
     torch.manual_seed(hparams.seed)
     
     log.info("Training Day and Night")
@@ -68,8 +80,14 @@ def train(cfg: DictConfig) -> None:
             accuracy = (y_pred.argmax(dim=1) == target).float().mean().item()
             statistics["train_accuracy"].append(accuracy)
 
+            wandb.log({"train_loss": loss.item(), "train_accuracy": accuracy})
+
             if i % 100 == 0:
                 log.info(f"Epoch: {epoch}, iter {i}, loss: {loss.item():.4f}, Acc: {accuracy:.2f}")
+                
+                # add a plot of histogram of the gradients
+                grads = torch.cat([p.grad.flatten() for p in model.parameters() if p.grad is not None], 0)
+                wandb.log({"gradients": wandb.Histogram(grads)})
     
     log.info("Training Complete")
     
@@ -92,6 +110,24 @@ def train(cfg: DictConfig) -> None:
     
     fig.savefig(plot_save_path)
     log.info(f"Plot saved to {plot_save_path}")
+
+    #Saving artifacts to wandb
+
+    final_accuracy = accuracy_score(target, y_pred.argmax(dim=1))
+    final_precision = precision_score(target, y_pred.argmax(dim=1), average="weighted")
+    final_recall = recall_score(target, y_pred.argmax(dim=1), average="weighted")
+    final_f1 = f1_score(target, y_pred.argmax(dim=1), average="weighted")
+
+    # first we save the model to a file then log it as an artifact
+    #torch.save(model.state_dict(), "model.pth")
+    artifact = wandb.Artifact(
+        name="arginator_binary_classifier_model",
+        type="model",
+        description="A model trained to classify ProtT5 protein embedddings into beta-lactamase or non-beta-lactamases",
+        metadata={"accuracy": final_accuracy, "precision": final_precision, "recall": final_recall, "f1": final_f1},
+    )
+    artifact.add_file(model_save_path)
+    run.log_artifact(artifact)
 
 if __name__ == "__main__":
     train()
