@@ -63,7 +63,7 @@ def train(cfg: DictConfig) -> None:
 
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=hparams.lr)
-    statistics = {"train_loss": [], "train_accuracy": [], "val_accuracy": []}
+    statistics = {"train_loss": [], "train_accuracy": [], "val_accuracy": [], "val_loss": []}
 
     # TRAINING LOOP
     for epoch in range(hparams.epochs):
@@ -97,13 +97,14 @@ def train(cfg: DictConfig) -> None:
             for val_img, val_target in val_dataloader:
                 val_img, val_target = val_img.to(DEVICE), val_target.to(DEVICE)
                 y_pred_val = model(val_img)
+                val_loss = loss_fn(y_pred_val, val_target)
                     #correct += (y_pred_test.argmax(dim=1) == test_target).float().sum().item()
                     #total += test_target.size(0)
-
+                statistics["val_loss"].append(val_loss.item())
                 val_accuracy = (y_pred_val.argmax(dim=1) == val_target).float().mean().item()
                 statistics["val_accuracy"].append(val_accuracy)
 
-                wandb.log({"val_accuracy": val_accuracy})
+                wandb.log({"val_accuracy": val_accuracy, "val_loss": val_loss.item()})
 
     
     log.info("Training Complete")
