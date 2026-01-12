@@ -1,8 +1,6 @@
 import torch
-import hydra
-import logging
-import os
-from omegaconf import DictConfig
+import typer
+
 from arginator_protein_classifier.data import get_dataloaders
 from arginator_protein_classifier.model import Model
 
@@ -10,30 +8,15 @@ log = logging.getLogger(__name__)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 
-# Get path to configs
-current_file_path = os.path.abspath(__file__)
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
-config_path = os.path.join(project_root, "configs")
+@app.command()
+def evaluate(model_checkpoint: str = "models/model.pth", data_path: str = "data") -> None:
+    """Evaluate a trained model."""
+    print("Evaluating model performance...")
 
-# We reuse the same config file as training to ensure consistency
-@hydra.main(version_base=None, config_path=config_path, config_name="train_config")
-def evaluate(cfg: DictConfig) -> None:
-    """Evaluate a trained model using Hydra configuration."""
-    
-    hparams = cfg.experiment
-    paths = cfg.paths
-    
-    log.info("Evaluating model performance...")
-    
     # 1. Load Model Architecture
-    # CRITICAL: We use the config values, so the architecture matches exactly what was trained
-    model = Model(
-        input_dim=1024, 
-        output_dim=2, 
-        dropout_rate=hparams.dropout_rate 
-    ).to(DEVICE)
-    
-    # 2. Load Weights
+    model = Model(input_dim=1024, output_dim=2, dropout_rate=0.2).to(DEVICE)
+
+    # 2. Load Weights (Created by train.py)
     try:
         model.load_state_dict(torch.load(paths.model_filename, map_location=DEVICE))
         log.info(f"Loaded weights from {paths.model_filename}")
@@ -55,8 +38,9 @@ def evaluate(cfg: DictConfig) -> None:
             y_pred = model(img)
             correct += (y_pred.argmax(dim=1) == target).float().sum().item()
             total += target.size(0)
-            
-    log.info(f"Test Set Accuracy: {correct / total:.4f}")
+
+    print(f"Test Set Accuracy: {correct / total:.4f}")
+
 
 if __name__ == "__main__":
-    evaluate()
+    app()
