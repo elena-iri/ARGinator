@@ -39,15 +39,14 @@ jobs:
 
           # 2. Set up Index logic
           if [ "${{ matrix.operating-system }}" == "macos-latest" ]; then
-             # Mac uses standard PyPI
+             # Mac uses standard PyPI, no special strategy needed
              INDEX_ARGS=""
           else
-             # Linux/Windows uses PyTorch CPU index as an EXTRA source
-             INDEX_ARGS="--extra-index-url https://download.pytorch.org/whl/cpu"
+             # Linux/Windows needs the extra index AND the permission to look across both
+             INDEX_ARGS="--extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match"
           fi
 
-          # 3. Install using --override and --extra-index-url
-          # This allows uv to find torch on the special index and pytest on PyPI
+          # 3. Final Install Command
           uv pip install \
             -r requirements.txt \
             pytest pytest-cov \

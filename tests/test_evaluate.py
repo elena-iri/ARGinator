@@ -4,22 +4,14 @@ from omegaconf import OmegaConf
 import torch
 from arginator_protein_classifier.evaluate import evaluate
 
-# ---------------------------------------------------------
-# DECORATORS (Applied Top -> Bottom)
-# ARGUMENTS INJECTED (Bottom -> Top in your setup)
-# ---------------------------------------------------------
 @patch("arginator_protein_classifier.evaluate.get_dataloaders")           # Becomes Arg 3
 @patch("arginator_protein_classifier.evaluate.torch.load")                # Becomes Arg 2
 @patch("arginator_protein_classifier.evaluate.Model")                     # Becomes Arg 1
 @patch("arginator_protein_classifier.evaluate.DEVICE", torch.device("cpu")) # No Arg
 def test_evaluate(mock_model_class, mock_torch_load, mock_get_dataloaders):
-    #             ^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^^^^^
-    #             1. Model Mock                     3. Dataloader Mock
-
     """
     Test the evaluation script.
     """
-    
     # 1: Config
     cfg = OmegaConf.create({
         "experiment": {
