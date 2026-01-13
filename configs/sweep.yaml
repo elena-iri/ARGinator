@@ -1,0 +1,31 @@
+program: src/arginator_protein_classifier/train.py
+name: sweep
+project: arginator_protein_classifier
+entity: eleni-iriondo2-danmarks-tekniske-universitet-dtu
+
+method: bayes
+metric:
+    goal: minimize
+    name: val_loss
+parameters:
+    experiment.lr:
+        min: 0.00001
+        max: 0.01
+        distribution: log_uniform
+    experiment.batch_size:
+        values: [16, 32, 64]
+    experiment.epochs:
+        values: [5, 10]
+    experiment.dropout_rate:
+        min: 0.1
+        max: 0.5
+        distribution: uniform
+
+command:
+- ${env}
+- ${interpreter}
+- ${program}
+- ${args_no_hyphens}
+
+run_cap: 50
+

@@ -1,14 +1,5 @@
-experiment:
-  lr: 0.001
-  dropout_rate: 0.2
-  batch_size: 32
-  epochs: 5
-  seed: 42
-
-paths:
-  data: ".data"            # Used by all scripts
-  model_filename: "model.pth"
-
-processing:
-  force: false             # Default to not overwriting
-  seed: 42
+defaults:
+  - experiment: default
+  - paths: default
+  - processing: default
+  - _self_
