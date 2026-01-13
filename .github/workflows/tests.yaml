@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - development
-      - continuous_tests  # Added for your immediate testing
+      - continuous_tests
   pull_request:
     branches:
       - main
@@ -15,15 +15,16 @@ jobs:
   test:
     runs-on: ${{ matrix.operating-system }}
     strategy:
+      fail-fast: false  # Don't cancel other jobs if one specific torch version fails
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest", "macos-latest"]
         python-version: ["3.11", "3.12"]
+        pytorch-version: ["2.4.0", "2.5.1"]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Installs uv and handles Python version + caching
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -31,8 +32,19 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
+        shell: bash
         run: |
+          # 1. Install your project dependencies first
           uv pip install -r requirements.txt
+          
+          # 2. Force-install the specific PyTorch version from the matrix
+          if [ "${{ matrix.operating-system }}" == "macos-latest" ]; then
+             uv pip install "torch==${{ matrix.pytorch-version }}"
+          else
+             uv pip install "torch==${{ matrix.pytorch-version }}" --index-url https://download.pytorch.org/whl/cpu
+          fi
+          
+          # 3. Install testing tools and the package itself
           uv pip install pytest pytest-cov
           uv pip install -e .
 
