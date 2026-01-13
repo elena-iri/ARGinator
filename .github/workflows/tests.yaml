@@ -34,22 +34,25 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          # 1. Determine index for CPU speed
+          # 1. Create a constraints file on the fly to force the matrix version
+          echo "torch==${{ matrix.pytorch-version }}" > constraints.txt
+
+          # 2. Determine the index URL for CPU versions
           if [ "${{ matrix.operating-system }}" == "macos-latest" ]; then
-             EXTRA_INDEX=""
+            EXTRA_INDEX=""
           else
-             EXTRA_INDEX="--index-url https://download.pytorch.org/whl/cpu"
+            EXTRA_INDEX="--index-url https://download.pytorch.org/whl/cpu"
           fi
 
-          # 2. Install the SPECIFIC torch first
-          uv pip install "torch==${{ matrix.pytorch-version }}" $EXTRA_INDEX
+          # 3. Install EVERYTHING in one go using the constraint
+          # This prevents uv from trying to upgrade torch later
+          uv pip install \
+            -r requirements.txt \
+            pytest pytest-cov \
+            -c constraints.txt \
+            $EXTRA_INDEX
 
-          # 3. Install other requirements
-          # We use --exclude-newer to prevent accidental upgrades if needed
-          # But mainly, uv will see torch is already satisfied
-          uv pip install -r requirements.txt pytest pytest-cov
-
-          # 4. Install the package in editable mode
+          # 4. Install your package - uv will now respect the 2.4.0 version already there
           uv pip install -e .
 
       - name: Run tests & coverage
