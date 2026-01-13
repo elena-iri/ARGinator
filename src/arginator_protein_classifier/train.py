@@ -36,11 +36,12 @@ def train(cfg: DictConfig) -> None:
 
     run = wandb.init(
         project="arginator_protein_classifier",
-        config={"lr": hparams.lr,
-                "dropout_rate": hparams.dropout_rate,
-                "batch_size": hparams.batch_size,
-                "epochs": hparams.epochs,
-                "seed": hparams.seed},
+        #config={"lr": hparams.lr,
+         #       "dropout_rate": hparams.dropout_rate,
+         #       "batch_size": hparams.batch_size,
+          #      "epochs": hparams.epochs,
+           #     "seed": hparams.seed},
+        config=OmegaConf.to_container(cfg.experiment, resolve=True),
     )
 
     torch.manual_seed(hparams.seed)
