@@ -3,11 +3,9 @@ name: Code linting
 on:
   push:
     branches:
-      - main
       - development
   pull_request:
     branches:
-      - main
       - development
   workflow_dispatch: {}
 
@@ -24,6 +22,7 @@ jobs:
       uses: astral-sh/setup-uv@v7
       with:
         python-version: 3.11
+        enable-cache: true
 
     - name: Install dependencies
       run: |
