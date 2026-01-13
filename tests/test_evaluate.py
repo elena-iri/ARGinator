@@ -7,7 +7,8 @@ from arginator_protein_classifier.evaluate import evaluate
 @patch("arginator_protein_classifier.evaluate.get_dataloaders")
 @patch("arginator_protein_classifier.evaluate.torch.load")
 @patch("arginator_protein_classifier.evaluate.Model")
-def test_evaluate(mock_model_class, mock_torch_load, mock_get_dataloaders):
+@patch("arginator_protein_classifier.evaluate.DEVICE", torch.device("cpu"))
+def test_evaluate(mock_get_dataloaders, mock_torch_load, mock_model_class):
     """
     Test the evaluation script.
     """
