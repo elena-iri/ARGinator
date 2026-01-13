@@ -4,11 +4,18 @@ from omegaconf import OmegaConf
 import torch
 from arginator_protein_classifier.evaluate import evaluate
 
-@patch("arginator_protein_classifier.evaluate.get_dataloaders")
-@patch("arginator_protein_classifier.evaluate.torch.load")
-@patch("arginator_protein_classifier.evaluate.Model")
-@patch("arginator_protein_classifier.evaluate.DEVICE", torch.device("cpu"))
-def test_evaluate(mock_get_dataloaders, mock_torch_load, mock_model_class):
+# ---------------------------------------------------------
+# DECORATORS (Applied Top -> Bottom)
+# ARGUMENTS INJECTED (Bottom -> Top in your setup)
+# ---------------------------------------------------------
+@patch("arginator_protein_classifier.evaluate.get_dataloaders")           # Becomes Arg 3
+@patch("arginator_protein_classifier.evaluate.torch.load")                # Becomes Arg 2
+@patch("arginator_protein_classifier.evaluate.Model")                     # Becomes Arg 1
+@patch("arginator_protein_classifier.evaluate.DEVICE", torch.device("cpu")) # No Arg
+def test_evaluate(mock_model_class, mock_torch_load, mock_get_dataloaders):
+    #             ^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^^^^^
+    #             1. Model Mock                     3. Dataloader Mock
+
     """
     Test the evaluation script.
     """
@@ -26,33 +33,31 @@ def test_evaluate(mock_get_dataloaders, mock_torch_load, mock_model_class):
     })
 
     # 2: Mock the Model
+    # Now 'mock_model_class' actually holds the Model class mock
     mock_model_instance = MagicMock()
     mock_model_class.return_value = mock_model_instance
     
-    # Ensure model.to(DEVICE) returns the model itself (Chainable method)
+    # Ensure model.to(DEVICE) returns the model itself
     mock_model_instance.to.return_value = mock_model_instance
 
     # Setup the forward pass return value
-    # Prediction: [Class 1 (0.9), Class 0 (0.8)]
     fake_prediction = torch.tensor([[0.1, 0.9], [0.8, 0.2]])
     mock_model_instance.return_value = fake_prediction
 
     # 3: Mock Data
     fake_img = torch.randn(2, 1024)
-    # Targets match the prediction indices [1, 0]
     fake_target = torch.tensor([1, 0])
     
     mock_loader = MagicMock()
     mock_loader.__iter__.return_value = [(fake_img, fake_target)]
+    
+    # Now 'mock_get_dataloaders' actually holds the Dataloader function mock
     mock_get_dataloaders.return_value = (None, None, mock_loader)
 
     # 4: Run
     evaluate.__wrapped__(cfg)
 
     # 5: Assertions
-    # Verify the model was moved to device
     assert mock_model_instance.to.called
-    # Verify evaluation mode was set
     assert mock_model_instance.eval.called
-    # Verify forward pass happened
     assert mock_model_instance.called
