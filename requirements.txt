@@ -200,7 +200,7 @@ sympy==1.13.1
     # via torch
 torch>=2.2.0 ; sys_platform == 'darwin'
     # via arginator-protein-classifier
-torch>=2.2.0+cpu ; sys_platform != 'darwin'
+torch>=2.2.0 ; sys_platform != 'darwin'
     # via arginator-protein-classifier
 typer==0.15.1
     # via arginator-protein-classifier
