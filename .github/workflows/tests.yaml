@@ -34,26 +34,23 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          # 1. Create a constraints file on the fly to force the matrix version
-          echo "torch==${{ matrix.pytorch-version }}" > constraints.txt
+          # 1. Create an OVERRIDES file (stronger than constraints)
+          echo "torch==${{ matrix.pytorch-version }}" > overrides.txt
 
-          # 2. Determine the index URL for CPU versions
+          # 2. Determine index
           if [ "${{ matrix.operating-system }}" == "macos-latest" ]; then
-            EXTRA_INDEX=""
+             EXTRA_INDEX=""
           else
-            EXTRA_INDEX="--index-url https://download.pytorch.org/whl/cpu"
+             EXTRA_INDEX="--index-url https://download.pytorch.org/whl/cpu"
           fi
 
-          # 3. Install EVERYTHING in one go using the constraint
-          # This prevents uv from trying to upgrade torch later
+          # 3. Use --override to force uv to ignore the torch==2.6.0 in your metadata
           uv pip install \
             -r requirements.txt \
             pytest pytest-cov \
-            -c constraints.txt \
-            $EXTRA_INDEX
-
-          # 4. Install your package - uv will now respect the 2.4.0 version already there
-          uv pip install -e .
+            --override overrides.txt \
+            $EXTRA_INDEX \
+            -e .
 
       - name: Run tests & coverage
         run: |
