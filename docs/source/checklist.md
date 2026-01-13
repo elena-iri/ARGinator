@@ -71,7 +71,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Use profiling to optimize your code (M12) - TOMS
 * [✅] Use logging to log important events in your code (M14) MAX 
 * [✅] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14) Elena 
-* [✅ ] Consider running a hyperparameter optimization sweep (M14) Elena
+* [✅] Consider running a hyperparameter optimization sweep (M14) Elena
       https://wandb.ai/eleni-iriondo2-danmarks-tekniske-universitet-dtu/arginator_protein_classifier/reports/Hyperparameter-sweep--VmlldzoxNTYxMzY1Mw
 * [ ] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15) Optional Claudio
 * [ ] Revise cookicutter struct
@@ -81,9 +81,9 @@ will check the repositories and the code to verify your answers.
 * [ ] Write unit tests related to the data part of your code (M16) - MAX
 * [ ] Write unit tests related to model construction and or model training (M16) - MAX
 * [ ] Calculate the code coverage (M16) - MAX
-* [ ] Get some continuous integration running on the GitHub repository (M17) Elena 
+* [ ] Get some continuous integration running on the GitHub repository (M17) Max 
 * [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Elena 
-* [ ] Add a linting step to your continuous integration (M17) Elena 
+* [✅ ] Add a linting step to your continuous integration (M17) Elena 
 * [ ] Add pre-commit hooks to your version control setup (M18) Elena 
 * [ ] Add a continues workflow that triggers when data changes (M19) Free 
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Free 
