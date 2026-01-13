@@ -34,22 +34,25 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          # 1. Create an OVERRIDES file (stronger than constraints)
+          # 1. Create an OVERRIDES file to force the matrix version
           echo "torch==${{ matrix.pytorch-version }}" > overrides.txt
 
-          # 2. Determine index
+          # 2. Set up Index logic
           if [ "${{ matrix.operating-system }}" == "macos-latest" ]; then
-             EXTRA_INDEX=""
+             # Mac uses standard PyPI
+             INDEX_ARGS=""
           else
-             EXTRA_INDEX="--index-url https://download.pytorch.org/whl/cpu"
+             # Linux/Windows uses PyTorch CPU index as an EXTRA source
+             INDEX_ARGS="--extra-index-url https://download.pytorch.org/whl/cpu"
           fi
 
-          # 3. Use --override to force uv to ignore the torch==2.6.0 in your metadata
+          # 3. Install using --override and --extra-index-url
+          # This allows uv to find torch on the special index and pytest on PyPI
           uv pip install \
             -r requirements.txt \
             pytest pytest-cov \
             --override overrides.txt \
-            $EXTRA_INDEX \
+            $INDEX_ARGS \
             -e .
 
       - name: Run tests & coverage
