@@ -27,7 +27,7 @@ dependencies = [
     "matplotlib>=3.10.8",
     "rich>=14.2.0",
     "scikit-learn>=1.8.0",
-    "torch==2.6.0",
+    "torch>=2.2.0",
     "typer==0.15.1",
     "uvicorn==0.34.0",
     "wandb>=0.23.1",
@@ -61,6 +61,7 @@ explicit = true
 
 [tool.ruff]
 line-length = 120
+lint.select =["I"]
 
 [tool.coverage.run]
 omit = ["tests/*"]
