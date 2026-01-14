@@ -82,9 +82,9 @@ will check the repositories and the code to verify your answers.
 * [ ] Write unit tests related to model construction and or model training (M16) - MAX
 * [ ] Calculate the code coverage (M16) - MAX
 * [ ] Get some continuous integration running on the GitHub repository (M17) Max 
-* [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Elena 
-* [✅ ] Add a linting step to your continuous integration (M17) Elena 
-* [ ] Add pre-commit hooks to your version control setup (M18) Elena 
+* [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max 
+* [✅] Add a linting step to your continuous integration (M17) Elena 
+* [✅] Add pre-commit hooks to your version control setup (M18) Elena 
 * [ ] Add a continues workflow that triggers when data changes (M19) Free 
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Free 
 * [ ] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
@@ -124,18 +124,18 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 1 fill here ---
+Group 16
 
 ### Question 2
 > **Enter the study number for each member in the group**
 >
 > Example:
 >
-> *sXXXXXX, sXXXXXX, sXXXXXX*
+> *s243312, sXXXXXX, sXXXXXX*
 >
 > Answer:
 
---- question 2 fill here ---
+s243312, s, s, s
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
