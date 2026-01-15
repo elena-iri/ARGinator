@@ -13,6 +13,8 @@ from omegaconf import DictConfig
 # from operator import itemgetter
 import numpy as np
 from hydra.core.hydra_config import HydraConfig
+import pytorch_lightning as pl
+# import tasks
 
 # Initialize Logger
 log = logging.getLogger(__name__)
@@ -203,7 +205,6 @@ def get_dataloaders(data_path, task: str = "Binary", batch_size=32,
         train_subset, 
         batch_size=batch_size, 
         sampler=train_sampler, 
-        shuffle=False, 
         num_workers=2
     )
     
@@ -217,6 +218,68 @@ def get_dataloaders(data_path, task: str = "Binary", batch_size=32,
 current_file_path = os.path.abspath(__file__)
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
 config_path = os.path.join(project_root, "configs")
+
+class TL_Dataset(pl.LightningDataModule):
+    def __init__(self, data_path, task, batch_size, split_ratios, seed):
+        super().__init__()
+        self.data_path = Path(data_path)
+        self.task = task
+        self.batch_size = batch_size
+        self.split_ratios = split_ratios
+        self.seed = seed
+    
+    def setup(self, stage=None):
+        """does the split and replaces get_dataloaders"""
+        full_dataset = MyDataset(self.data_path, task=self.task)
+        labels = full_dataset.get_labels()
+        
+        # Split indices (using your logic)
+        indices = np.arange(len(full_dataset))
+        labels = [int(label) for label in labels]
+        val_test_ratio = self.split_ratios[1] + self.split_ratios[2]
+        
+        train_idx, temp_idx, train_labels, temp_labels = train_test_split(
+            indices, labels, test_size=val_test_ratio, stratify=labels, random_state=self.seed
+        )
+
+        val_ratio_adjusted = self.split_ratios[1] / (self.split_ratios[1] + self.split_ratios[2])
+        val_idx, test_idx = train_test_split(
+            temp_idx, 
+            test_size=(1 - val_ratio_adjusted), 
+            stratify=temp_labels, 
+            random_state=self.seed
+        )
+
+        # Create Subsets
+        self.train_subset = Subset(full_dataset, train_idx)
+        self.val_subset = Subset(full_dataset, val_idx)
+        self.test_subset = Subset(full_dataset, test_idx)
+
+        # Calculate Sampler Weights (Train only)
+        class_counts = np.bincount(train_labels)
+        class_weights = 1.0 / (class_counts + 1e-6)
+        sample_weights = [class_weights[t] for t in train_labels]
+        
+        self.train_sampler = WeightedRandomSampler(
+            weights=torch.DoubleTensor(sample_weights),
+            num_samples=len(sample_weights),
+            replacement=True
+        )
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.train_subset, 
+            batch_size=self.batch_size, 
+            sampler=self.train_sampler,
+            #shuffle=True, #cannot huffle with sampler option (makes sense)
+            num_workers=2
+        )
+
+    def val_dataloader(self):
+        return DataLoader(self.val_subset, batch_size=self.batch_size, num_workers=2)
+
+    def test_dataloader(self):
+        return DataLoader(self.test_subset, batch_size=self.batch_size, num_workers=2)
 
 # Hydra Main
 @hydra.main(version_base=None, config_path=config_path, config_name="train_config")
@@ -237,11 +300,11 @@ def main(cfg: DictConfig):
     log.info(f"Processing data from {data_path} (task={task})...")
     data_path.mkdir(parents=True, exist_ok=True) 
     # Initialize dataset
-    dataset = MyDataset(data_path, output_folder=data_path, force_process=force, task = task)
+    dataset = TL_Dataset(data_path, output_folder=data_path, force_process=force, task = task)
     log.info("Data processing complete.")
     log.info("Testing Dataloader creation method")
-    train_loader, val_loader, test_loader = get_dataloaders(data_path, task=task, seed=seed)
-    first_batch = next(iter(train_loader))
-    log.info(f"Loader worked. Batch Shape: {first_batch[0].shape}")
+    # train_loader, val_loader, test_loader = get_dataloaders(data_path, task=task, seed=seed)
+    # first_batch = next(iter(train_loader))
+    # log.info(f"Loader worked. Batch Shape: {first_batch[0].shape}")
 if __name__ == "__main__":
     main()

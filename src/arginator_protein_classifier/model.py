@@ -42,7 +42,7 @@ class Lightning_Model(LightningModule):
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
         # Loss & Optimizer are to change according to hydra
-        self.criterium = instantiate(loss_fn) 
+        self.loss_fn = instantiate(loss_fn) 
         self.optimizer = optimizer
 
         #Metrics
@@ -62,11 +62,11 @@ class Lightning_Model(LightningModule):
     def training_step(self, batch, batch_idx):
         data, target = batch
         logits = self(data)
-        loss = self.criterium(logits, target)
+        loss = self.loss_fn(logits, target)
 
         # Logging
         preds = torch.argmax(logits, dim=1)
-        self.train_acc(preds, logits)
+        self.train_acc(preds, target)
         self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("train_acc", self.train_acc, on_step=False, on_epoch=True, prog_bar=True)
         return loss
@@ -88,6 +88,6 @@ class Lightning_Model(LightningModule):
 
 if __name__ == "__main__":
     x = torch.rand(1, 1024)
-    mock = Model(x.shape[0], 2, 0.3)
+    mock = Lightning_Model(x.shape[0], 2, 0.3)
     output = mock.forward(x)
     print(output.shape)
