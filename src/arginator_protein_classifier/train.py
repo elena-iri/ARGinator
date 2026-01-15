@@ -5,7 +5,8 @@ import os
 import matplotlib.pyplot as plt
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.hydra_config import HydraConfig
-
+from hydra.utils import instantiate
+from pytorch_lightning import Trainer
 from arginator_protein_classifier.model import Model
 from arginator_protein_classifier.data import get_dataloaders
 
@@ -37,19 +38,22 @@ def train(cfg: DictConfig) -> None:
     # SETUP MODEL
     model = Model(
         input_dim=1024, 
-        output_dim=2, 
+        output_dim=cfg.task.output_dim, 
         dropout_rate=hparams.dropout_rate
     ).to(DEVICE)
 
     # SETUP DATA
     train_dataloader, _, _ = get_dataloaders(
         cfg.paths.data, 
+        task = cfg.task.name,
         batch_size=hparams.batch_size,
         seed=cfg.processing.seed
     )
 
-    loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=hparams.lr)
+    #loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = instantiate(cfg.experiment.loss_function)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=hparams.lr)
+    optimizer = instantiate(cfg.optimizer, params=model.parameters())
     statistics = {"train_loss": [], "train_accuracy": []}
 
     # TRAINING LOOP
@@ -76,13 +80,15 @@ def train(cfg: DictConfig) -> None:
     # SAVE ARTIFACTS TO HYDRA FOLDER
     # Force the filename to be inside the output_dir
     # cfg.paths.model_filename is just "model.pth"
-    model_save_path = os.path.join(output_dir, cfg.paths.model_filename)
+    training_filename = f"model_{cfg.task.name}.pth"
+    model_save_path = os.path.join(output_dir, training_filename)
     
     torch.save(model.state_dict(), model_save_path)
     log.info(f"Model saved to {model_save_path}")
     
     # Save Plot to the same folder
-    plot_save_path = os.path.join(output_dir, "training_statistics.png")
+    training_plot_filename = f"training_plot_{cfg.task.name}.png"
+    plot_save_path = os.path.join(output_dir, training_plot_filename)
     
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     axs[0].plot(statistics["train_loss"])

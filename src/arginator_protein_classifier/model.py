@@ -1,7 +1,11 @@
+from matplotlib.pylab import logistic
 from torch import nn
 import torch
+from pytorch_lightning import LightningModule
+from hydra.utils import instantiate
+from torchmetrics import Accuracy
+
 class Model(nn.Module):
-    """Just a dummy model to show how to structure your code"""
     def __init__(self, input_dim, output_dim, dropout_rate)->None:
         super().__init__()
         self.input_dim = input_dim,
@@ -12,8 +16,6 @@ class Model(nn.Module):
         self.fc3 = nn.Linear(128, output_dim)
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=1)
-        self.sigmoid = nn.Sigmoid()
-
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.fc1(x)
@@ -23,7 +25,8 @@ class Model(nn.Module):
         x = self.relu(x)
         x = self.dropout(x)
         x = self.fc3(x)
-        return self.softmax(x)
+        return x
+    
 
 if __name__ == "__main__":
     x = torch.rand(1, 1024)
