@@ -62,7 +62,7 @@ will check the repositories and the code to verify your answers.
     are using (M2+M6)
 * [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7) TOMS **DO THIS AT THE VERY END**
 * [✅] Do a bit of code typing and remember to document essential parts of your code (M7)
-* [ ] Setup version control for your data or part of your data (M8) **optional**
+* [✅] Setup version control for your data or part of your data (M8) **optional**
 * [✅] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [✅] Construct one or multiple docker files for your code (M10) 
 * [✅] Build the docker files locally and make sure they work as intended (M10)
@@ -70,23 +70,24 @@ will check the repositories and the code to verify your answers.
 * [✅] Used Hydra to load the configurations and manage your hyperparameters (M11)
 * [ ] Use profiling to optimize your code (M12) - TOMS
 * [✅] Use logging to log important events in your code (M14) MAX 
-* [ ] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14) Elena 
-* [ ] Consider running a hyperparameter optimization sweep (M14) Elena 
-* [ ] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15) Optional Claudio
-* [ ] Revise cookicutter struct
+* [✅] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14) Elena 
+* [✅] Consider running a hyperparameter optimization sweep (M14) Elena
+      https://wandb.ai/eleni-iriondo2-danmarks-tekniske-universitet-dtu/arginator_protein_classifier/reports/Hyperparameter-sweep--VmlldzoxNTYxMzY1Mw
+* [✅] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15) Optional Claudio
+* [✅] Revise cookicutter struct
 
 ### Week 2
 
 * [✅] Write unit tests related to the data part of your code (M16) - MAX
 * [✅] Write unit tests related to model construction and or model training (M16) - MAX
 * [✅] Calculate the code coverage (M16) - MAX
-* [ ] Get some continuous integration running on the GitHub repository (M17) Elena 
-* [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Elena 
-* [ ] Add a linting step to your continuous integration (M17) Elena 
-* [ ] Add pre-commit hooks to your version control setup (M18) Elena 
+* [✅] Get some continuous integration running on the GitHub repository (M17) Max **UPDATE UNIT TEST**
+* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max **UPDATE UNIT TEST**
+* [✅] Add a linting step to your continuous integration (M17) Elena 
+* [✅] Add pre-commit hooks to your version control setup (M18) Elena 
 * [ ] Add a continues workflow that triggers when data changes (M19) Free 
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Free 
-* [ ] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
+* [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
 * [ ] Create a trigger workflow for automatically building your docker images (M21) Claudio 
 * [ ] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
 * [ ] Create a FastAPI application that can do inference using your model (M22) Toms
@@ -123,18 +124,18 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 1 fill here ---
+Group 16
 
 ### Question 2
 > **Enter the study number for each member in the group**
 >
 > Example:
 >
-> *sXXXXXX, sXXXXXX, sXXXXXX*
+> *s243312, sXXXXXX, sXXXXXX*
 >
 > Answer:
 
---- question 2 fill here ---
+s243312, s, s, s
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
