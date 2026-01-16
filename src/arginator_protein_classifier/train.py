@@ -1,4 +1,3 @@
-from re import split
 import torch
 import matplotlib.pyplot as plt
 import wandb
@@ -73,14 +72,12 @@ def train(cfg: DictConfig) -> None:
                             optimizer_config = cfg.optimizer,
                             loss_fn = cfg.experiment.loss_function)
     
-    # 3. callbacks (Optional but recommended)
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",
-        dirpath=output_dir,
-        filename="best-checkpoint",
-        save_top_k=1,
-        mode="min",
-    )
+    # SETUP MODEL
+    model = Model(
+        input_dim=1024, 
+        output_dim=2, 
+        dropout_rate=hparams.dropout_rate
+    ).to(DEVICE)
 
     # Trainer. We can also use hydra to instantiate the Trainer by modifying config file (too lazy to do it)
     trainer = Trainer(
@@ -263,29 +260,27 @@ if __name__ == "__main__":
 
 #                 wandb.log({"val_accuracy": val_accuracy, "val_loss": val_loss.item()})
     
-    # log.info("Training Complete")
+    log.info("Training Complete")
     
-    # # SAVE ARTIFACTS TO HYDRA FOLDER
-    # # Force the filename to be inside the output_dir
-    # # cfg.paths.model_filename is just "model.pth"
-    # training_filename = f"model_{cfg.task.name}.pth"
-    # model_save_path = os.path.join(output_dir, training_filename)
+    # SAVE ARTIFACTS TO HYDRA FOLDER
+    # Force the filename to be inside the output_dir
+    # cfg.paths.model_filename is just "model.pth"
+    model_save_path = os.path.join(output_dir, cfg.paths.model_filename)
     
-    # torch.save(model.state_dict(), model_save_path)
-    # log.info(f"Model saved to {model_save_path}")
+    torch.save(model.state_dict(), model_save_path)
+    log.info(f"Model saved to {model_save_path}")
     
-    # # Save Plot to the same folder
-    # training_plot_filename = f"training_plot_{cfg.task.name}.png"
-    # plot_save_path = os.path.join(output_dir, training_plot_filename)
+    # Save Plot to the same folder
+    plot_save_path = os.path.join(output_dir, "training_statistics.png")
     
-    # fig, axs = plt.subplots(1, 2, figsize=(15, 5))
-    # axs[0].plot(statistics["train_loss"])
-    # axs[0].set_title("Train loss")
-    # axs[1].plot(statistics["train_accuracy"])
-    # axs[1].set_title("Train accuracy")
+    fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    axs[0].plot(statistics["train_loss"])
+    axs[0].set_title("Train loss")
+    axs[1].plot(statistics["train_accuracy"])
+    axs[1].set_title("Train accuracy")
     
-    # fig.savefig(plot_save_path)
-    # log.info(f"Plot saved to {plot_save_path}")
+    fig.savefig(plot_save_path)
+    log.info(f"Plot saved to {plot_save_path}")
 
     #Calculate final metrics on training and tesst data
 #     train_metrics = evaluate(model, train_dataloader, DEVICE)

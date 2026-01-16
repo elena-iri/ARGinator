@@ -1,40 +1,23 @@
-from pkgutil import get_data
-from dotenv import load_dotenv
 import logging
 import h5py
-from sympy import Array
 import torch
 import hydra
 import os
 from pathlib import Path
-from sklearn.model_selection import train_test_split
-from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler, Subset
+from torch.utils.data import Dataset, DataLoader, random_split
 from omegaconf import DictConfig
-# from operator import itemgetter
-import numpy as np
-from hydra.core.hydra_config import HydraConfig
-import pytorch_lightning as pl
-# import tasks
 
 # Initialize Logger
 log = logging.getLogger(__name__)
-# Initialize environment variable of interest
+
 class MyDataset(Dataset):
     """My custom dataset."""
 
-    def __init__(self, data_path: Path, output_folder: Path = None, force_process: bool = False, task: str = "Binary") -> None:
+    def __init__(self, data_path: Path, output_folder: Path = None, force_process: bool = False) -> None:
         self.data_path = Path(data_path)
         self.output_folder = Path(output_folder) if output_folder else self.data_path
-        self.processed_file = self.output_folder / f"processed_data_{task.lower()}.pt"
+        self.processed_file = self.output_folder / "processed_data.pt"
         self.data = []
-        self.task = task.lower()
-        load_dotenv()
-        self.file_pattern = os.environ["FILE_PATTERN"]
-        classes = os.environ.get("CLASSES", "")
-        self.class_names = [c.strip() for c in classes.split(',')] if classes else []
-        # labels = os.environ[""]
-        if not self.class_names:
-            log.warning("No CLASS_NAMES found in .env. Labeling might fail.")
 
         if force_process or not self.processed_file.exists():
             self.preprocess(self.output_folder)
@@ -56,51 +39,6 @@ class MyDataset(Dataset):
     def __getitem__(self, index: int):
         embedding, label = self.data[index]
         return embedding, label
-    
-    # def _labeling(self, file_name: str) -> int:
-    #     """
-    #     Determines the label for a file based on the task and class configuration.
-    #     """
-    #     # --- Task: Binary ---
-    #     # Convention: "non" class is 0 (Negative), everything else is 1 (Positive)
-    #     if self.task == 'binary':
-    #         if "non" in file_name.lower():
-    #             return 0
-    #         return 1
-    #     elif self.task == 'multiclass':
-    #         # --- Task: Multi-class ---
-    #         # We match the file name against our explicit list from .env
-    #         # e.g., if 'class_b' is in filename, and 'b' is at index 1 in class_names, label is 1.
-    #         for idx, class_name in enumerate(self.class_names):
-    #             if class_name in file_name:
-    #                 return idx
-    #         log.warning(f"Could not determine label for file {file_name}")
-    #         return -1
-    
-    def _labeling(self, file_name: str) -> int:
-        """
-        Determines the label for a file based on the task and class configuration.
-        """
-        # --- Task: Binary ---
-        if self.task == 'binary':
-            if "non" in file_name.lower():
-                return 0
-            return 1
-            
-        # --- Task: Multi-class ---
-        elif self.task == 'multiclass':
-            for idx, class_name in enumerate(self.class_names):
-                # Use the pattern to construct exactly what the file should look like
-                # e.g., "card_class_{}_embeddings.h5" -> "card_class_a_embeddings.h5"
-                expected_filename = self.file_pattern.format(class_name)
-                
-                # Check for exact match (or if it ends with it, to be safe against paths)
-                if file_name == expected_filename or file_name.endswith(expected_filename):
-                    return idx
-                    
-            log.warning(f"Could not determine label for file {file_name}")
-            return -1         
-    
 
     def preprocess(self, output_folder: Path) -> None:
         """Reads H5 files, assigns labels, and saves to .pt file."""
@@ -114,23 +52,10 @@ class MyDataset(Dataset):
             log.warning(f"No .h5 files found in {self.data_path}")
             return
 
-        log.info(f"Found {len(h5_files)} H5 files. Processing for {self.task} setting")
+        log.info(f"Found {len(h5_files)} H5 files. Processing...")
 
         for file_path in h5_files:
-            label = self._labeling(file_path.name)
-
-            if label == -1:
-                continue
-            log.info(f"processing {file_path.name} with label {label}")
-            """Printing (idx, file_path) returns 
-            0 .data/card_class_a_embeddings.h5
-            1 .data/card_class_b_embeddings.h5
-            2 .data/card_class_c_embeddings.h5
-            3 .data/card_class_d_embeddings.h5
-            4 .data/non_betalactamase_embeddings_60k.h5"""
-            # if self.task == "Binary":
-            #     label = 0 if "non" in file_path.name else 1
-            
+            label = 0 if "non" in file_path.name else 1
             try:
                 with h5py.File(file_path, 'r') as hf:
                     for key in hf.keys():
@@ -140,8 +65,7 @@ class MyDataset(Dataset):
             except Exception as e:
                 log.error(f"Error reading {file_path}: {e}")
 
-        #torch.save(all_samples, output_folder / "processed_data.pt")
-        torch.save(all_samples, self.processed_file)
+        torch.save(all_samples, output_folder / "processed_data.pt")
         log.info(f"Saved {len(all_samples)} samples to {output_folder / 'processed_data.pt'}")
 
     def get_labels(self) -> torch.tensor:
@@ -156,14 +80,22 @@ class MyDataset(Dataset):
 def get_dataloaders(data_path, task: str = "Binary", batch_size=32, 
                     split_ratios: list = None, seed: int = 42):
     """Creates train, val, and test dataloaders."""
-    full_dataset = MyDataset(Path(data_path), task=task)
-    labels = full_dataset.get_labels()
-    indices = np.arange(len(full_dataset))
-    labels = [int(label) for label in labels]
-    val_test_ratio = split_ratios[1] + split_ratios[2]
-    # First split: Separate Train from (Val + Test)
-    train_idx, temp_idx, train_labels, temp_labels = train_test_split(
-        indices, labels, test_size = val_test_ratio, stratify = labels, random_state = seed
+    full_dataset = MyDataset(Path(data_path))
+    total_size = len(full_dataset)
+    
+    train_ratio, val_ratio, test_ratio = split_ratios
+    train_size = int(train_ratio * total_size)
+    val_size = int(val_ratio * total_size)
+    test_size = total_size - train_size - val_size
+    
+    log.info(f"Splitting {total_size} samples: Train({train_size}), Val({val_size}), Test({test_size}) with seed {seed}")
+
+    # Use the passed seed for the random split
+    generator = torch.Generator().manual_seed(seed) 
+    train_dataset, val_dataset, test_dataset = random_split(
+        full_dataset, 
+        [train_size, val_size, test_size],
+        generator=generator
     )
 
     # Second split: Separate Val from Test
@@ -304,11 +236,12 @@ def main(cfg: DictConfig):
     split_ratios = cfg.experiment.splits
     # Set seed for any global operations
     torch.manual_seed(seed)
-    # Show the task we are going for when building datasets
-    log.info(f"Selected task configuration: {task}")
+    
+    log.info(f"Processing data from {data_path}...")
+    
     # Ensure folder exists
-    log.info(f"Processing data from {data_path} (task={task})...")
-    data_path.mkdir(parents=True, exist_ok=True) 
+    data_path.mkdir(parents=True, exist_ok=True)
+    
     # Initialize dataset
     dataset = TL_Dataset(data_path, task, batch_size, split_ratios, seed, data_path)
     log.info(f"Processing data from {data_path} (task={task})...")

@@ -1,4 +1,3 @@
-from matplotlib.pylab import logistic
 from torch import nn
 import torch
 from pytorch_lightning import LightningModule
