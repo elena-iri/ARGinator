@@ -11,13 +11,14 @@ RUN apt update && \
 
 # RUN uv sync --frozen --no-install-project 
 ENV UV_LINK_MODE=copy
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-project 
 #These commands use the cache to speed up installation of dependencies
 
 COPY src/ src/
 COPY README.md README.md
-COPY data/ data/
+COPY data/processed_data.pt data/processed_data.pt
+COPY models/model.pth models/model.pth
 
 RUN uv sync --locked --no-cache --no-install-project
 
-ENTRYPOINT ["uv", "run", "src/arginator_protein_classifier/train.py"]
+ENTRYPOINT ["uv", "run", "src/arginator_protein_classifier/evaluate.py"]
