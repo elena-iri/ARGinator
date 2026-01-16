@@ -1,4 +1,0 @@
-name: binary
-output_dim: 2
-# loss_function:
-#   _target_: torch.nn.BCEWithLogitsLoss

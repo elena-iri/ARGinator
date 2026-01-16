@@ -1,9 +1,0 @@
-# This points to the actual PyTorch class
-_target_: torch.optim.Adam
-
-# Sub-parameters specific to Adam
-lr: ${experiment.lr}  # You can interpolate from your main config!
-betas: [0.9, 0.999]
-eps: 1e-08
-weight_decay: ${experiment.weight_decay}
-amsgrad: false
