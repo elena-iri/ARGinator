@@ -25,6 +25,9 @@ class MyDataset(Dataset):
         log.info(f"Loading data from {self.processed_file}")
         self.data = torch.load(self.processed_file)
 
+        labels = [sample[1] for sample in self.data]
+        log.info(f"Positive: {sum(labels)}, Negative: {len(labels) - sum(labels)}")
+
     def __len__(self) -> int:
         return len(self.data)
 
@@ -80,6 +83,14 @@ def get_dataloaders(data_path, batch_size=32, split_ratios=(0.7, 0.15, 0.15), se
         [train_size, val_size, test_size],
         generator=generator
     )
+
+    # 2. PRINT SPLIT COUNTS (Add this)
+    for name, ds in [("Train", train_dataset), ("Val", val_dataset), ("Test", test_dataset)]:
+        # Extract labels from the original data using the Subset indices
+        labels = [full_dataset.data[i][1] for i in ds.indices]
+        pos = sum(labels)
+        neg = len(labels) - pos
+        log.info(f"{name} split -> Positive: {pos}, Negative: {neg} ({pos/len(labels):.1%})")
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)

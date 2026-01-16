@@ -12,7 +12,6 @@ class Model(nn.Module):
         self.fc3 = nn.Linear(128, output_dim)
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=1)
-        self.sigmoid = nn.Sigmoid()
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -22,8 +21,7 @@ class Model(nn.Module):
         x = self.fc2(x)
         x = self.relu(x)
         x = self.dropout(x)
-        x = self.fc3(x)
-        return self.softmax(x)
+        return self.fc3(x)
 
 if __name__ == "__main__":
     x = torch.rand(1, 1024)
