@@ -1,4 +1,6 @@
 defaults:
+  - task: binary
+  - optimizer: adam
   - experiment: default
   - paths: default
   - processing: default

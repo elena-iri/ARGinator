@@ -1,0 +1,4 @@
+name: multiclass
+output_dim: 5
+# loss_function:
+#   _target_: torch.nn.CrossEntropyLoss
