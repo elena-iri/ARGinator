@@ -42,6 +42,14 @@ class MyDataset(Dataset):
         log.info(f"Loading data from {self.processed_file}")
         self.data = torch.load(self.processed_file)
 
+        labels = [sample[1] for sample in self.data]
+        if task == "binary":
+            log.info(f"Positive: {sum(labels)}, Negative: {len(labels) - sum(labels)}")
+        elif task =="multiclass":
+            class_counts = np.bincount(labels)
+            for idx, count in enumerate(class_counts):
+                log.info(f"Class {idx}: {count}")   
+
     def __len__(self) -> int:
         return len(self.data)
 
@@ -146,7 +154,7 @@ class MyDataset(Dataset):
         return [sample[1] for sample in self.data]
 
 def get_dataloaders(data_path, task: str = "Binary", batch_size=32, 
-                    split_ratios=(0.7, 0.15, 0.15), seed: int = 42):
+                    split_ratios: list = None, seed: int = 42):
     """Creates train, val, and test dataloaders."""
     full_dataset = MyDataset(Path(data_path), task=task)
     labels = full_dataset.get_labels()
@@ -178,9 +186,9 @@ def get_dataloaders(data_path, task: str = "Binary", batch_size=32,
     test_subset = Subset(full_dataset, test_idx)
 
 # ---------------------------------------------------------
-    # 5. Handle Imbalance by Calculating Weights for TRAIN subset only
+    # Handle Imbalance by Calculating Weights for TRAIN subset only
     # ---------------------------------------------------------
-    # Now we have a stratified train set (still imbalanced, but consistent).
+    # We have a stratified train set (still imbalanced, but consistent).
     # We apply the Sampler here to fix the imbalance during training.
     
     log.info("Calculating weights for WeightedRandomSampler (Train set only)...")
@@ -220,14 +228,15 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path
 config_path = os.path.join(project_root, "configs")
 
 class TL_Dataset(pl.LightningDataModule):
-    def __init__(self, data_path, task, batch_size, split_ratios, seed):
+    def __init__(self, data_path, task, batch_size, split_ratios, seed, output_folder):
         super().__init__()
         self.data_path = Path(data_path)
         self.task = task
         self.batch_size = batch_size
         self.split_ratios = split_ratios
         self.seed = seed
-    
+        self.output_path = output_folder
+
     def setup(self, stage=None):
         """does the split and replaces get_dataloaders"""
         full_dataset = MyDataset(self.data_path, task=self.task)
@@ -271,7 +280,6 @@ class TL_Dataset(pl.LightningDataModule):
             self.train_subset, 
             batch_size=self.batch_size, 
             sampler=self.train_sampler,
-            #shuffle=True, #cannot huffle with sampler option (makes sense)
             num_workers=2
         )
 
@@ -292,6 +300,8 @@ def main(cfg: DictConfig):
     seed = cfg.processing.seed
     hydra_config = HydraConfig.get()
     task = hydra_config.runtime.choices.task
+    batch_size = cfg.experiment.batch_size
+    split_ratios = cfg.experiment.splits
     # Set seed for any global operations
     torch.manual_seed(seed)
     # Show the task we are going for when building datasets
@@ -300,9 +310,23 @@ def main(cfg: DictConfig):
     log.info(f"Processing data from {data_path} (task={task})...")
     data_path.mkdir(parents=True, exist_ok=True) 
     # Initialize dataset
-    dataset = TL_Dataset(data_path, output_folder=data_path, force_process=force, task = task)
-    log.info("Data processing complete.")
-    log.info("Testing Dataloader creation method")
+    dataset = TL_Dataset(data_path, task, batch_size, split_ratios, seed, data_path)
+    log.info(f"Processing data from {data_path} (task={task})...")
+    dataset.setup()
+    log.info(f"Created General Dataset. Dataset is of type{type(dataset)}")
+    log.info(f"Creating Training Dataset")
+    train_loader = dataset.train_subset
+    log.info(f"Training Dataset has shape {train_loader.__len__}")
+    val_loader = dataset.val_subset
+    log.info(f"Validation Dataset has shape {val_loader.__len__}")
+    test_loader = dataset.test_subset
+    log.info(f"Test Dataset has shape {test_loader.__len__}")
+    log.info("Testing Train Dataloader creation method")
+    tr_dl = dataset.train_dataloader()
+    log.info(f"Number of batches in train loader: {len(tr_dl)}")
+    #first batch
+    first_batch = next(iter(tr_dl))
+    log.info(f"First batch shape (features): {first_batch[0].shape}")
     # train_loader, val_loader, test_loader = get_dataloaders(data_path, task=task, seed=seed)
     # first_batch = next(iter(train_loader))
     # log.info(f"Loader worked. Batch Shape: {first_batch[0].shape}")
