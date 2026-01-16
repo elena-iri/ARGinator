@@ -134,7 +134,7 @@ pymdown-extensions==10.20
     # via
     #   mkdocs-material
     #   mkdocstrings
-pytest==8.3.4
+pytest==9.0.2
 python-dateutil==2.9.0.post0
     # via ghp-import
 python-dotenv==1.2.1
