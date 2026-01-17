@@ -81,8 +81,8 @@ will check the repositories and the code to verify your answers.
 * [✅] Write unit tests related to the data part of your code (M16) - MAX
 * [✅] Write unit tests related to model construction and or model training (M16) - MAX
 * [✅] Calculate the code coverage (M16) - MAX
-* [✅] Get some continuous integration running on the GitHub repository (M17) Max **UPDATE UNIT TEST**
-* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max **UPDATE UNIT TEST**
+* [✅] Get some continuous integration running on the GitHub repository (M17) Max
+* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max
 * [✅] Add a linting step to your continuous integration (M17) Elena 
 * [✅] Add pre-commit hooks to your version control setup (M18) Elena 
 * [ ] Add a continues workflow that triggers when data changes (M19) Free 
