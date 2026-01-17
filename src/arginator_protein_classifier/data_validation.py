@@ -9,7 +9,7 @@ import logging
 import os
 
 # Configuration
-DATA_DIR = Path("data")
+DATA_DIR = Path(os.getenv("DATA_PATH", ".data"))
 EXPECTED_DIM = 1024
 MIN_CLASS_RATIO = 0.10
 REPORT_FILE = "data_report.md"
