@@ -1,7 +1,7 @@
 import logging
 import os
 from re import split
-
+from dotenv import load_dotenv
 import hydra
 import matplotlib.pyplot as plt
 import torch
@@ -19,16 +19,16 @@ from arginator_protein_classifier.model import Lightning_Model
 
 # from arginator_protein_classifier.model import Model
 # from arginator_protein_classifier.data import get_dataloaders
-
 # 1. Setup Logger
 log = logging.getLogger(__name__)
-
+load_dotenv()
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 # Get absolute path to configs
 current_file_path = os.path.abspath(__file__)
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
 config_path = os.path.join(project_root, "configs")
+
 
 
 @hydra.main(version_base=None, config_path=config_path, config_name="train_config")
@@ -45,7 +45,8 @@ def train(cfg: DictConfig) -> None:
     torch.manual_seed(hparams.seed)
 
     wandb_logger = WandbLogger(
-        project="arginator_protein_classifier",
+        entity = os.environ["WANDB_ENTITY"],
+        project=os.environ["WANDB_PROJECT"],
         config=OmegaConf.to_container(cfg.experiment, resolve=True),
         log_model=True,  # Automatically logs model checkpoints
     )
