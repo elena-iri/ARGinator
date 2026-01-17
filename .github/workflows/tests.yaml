@@ -36,6 +36,7 @@ jobs:
         run: |
           # 1. Create an OVERRIDES file to force the matrix version
           echo "torch==${{ matrix.pytorch-version }}" > overrides.txt
+          echo "pathspec<0.12.0" >> overrides.txt
 
           # 2. Set up Index logic
           if [ "${{ matrix.operating-system }}" == "macos-latest" ]; then
