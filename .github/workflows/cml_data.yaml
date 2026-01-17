@@ -70,7 +70,7 @@ jobs:
         CLASSES: "class_a,class_b,class_c,class_d" # Only needed if task is multiclass
       run: |
         # Run the script as a module
-        python -m arginator_protein_classifier.data_validation
+        uv run python -m arginator_protein_classifier.data_validation
 
     # 7. Publish Report to PR
     - name: Setup CML
