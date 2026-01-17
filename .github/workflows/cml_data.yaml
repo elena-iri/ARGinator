@@ -21,19 +21,21 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    # 1. Checkout the repository so we have the .dvc files
+    # 1. Checkout Code
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 2. Install UV (Faster than standard pip)
+    # 2. Setup UV
     - name: Install uv
       uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
 
-    # 3. Install DVC and the Google Cloud Support package
+    # 3. Install DVC
     - name: Install DVC
       run: |
         uv tool install dvc
-        uv tool install "dvc[gs]"  # [gs] is crucial for Google Cloud support!
+        uv tool install "dvc[gs]"
 
     # 4. Authenticate with Google Cloud
     # This uses the Service Account Key you stored in GitHub Secrets
