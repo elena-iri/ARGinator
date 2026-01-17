@@ -42,6 +42,15 @@ jobs:
       with:
         credentials_json: ${{ secrets.gcp_key }}
 
+    - name: Cache DVC storage
+      uses: actions/cache@v4
+      with:
+        path: .dvc/cache
+        # Create a unique key based on the dvc.lock file
+        key: dvc-cache-${{ hashFiles('dvc.lock') }}
+        restore-keys: |
+          dvc-cache-
+
     # 5. Pull the Data
     # --no-run-cache ensures we just get the data files, not pipeline run states
     - name: Pull data from DVC
