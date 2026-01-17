@@ -1,0 +1,72 @@
+name: DVC Workflow
+
+on:
+  pull_request:
+    branches:
+    - main
+    - development
+    - DVC-Workflow
+  push:
+    branches:
+    - main
+    - development
+    - DVC-Workflow
+    paths:
+    - '**/*.dvc'
+    - '.dvc/**'
+  workflow_dispatch: {}
+
+jobs:
+  dvc:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout the repository so we have the .dvc files
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Install UV (Faster than standard pip)
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    # 3. Install DVC and the Google Cloud Support package
+    - name: Install DVC
+      run: |
+        uv tool install dvc
+        uv tool install "dvc[gs]"  # [gs] is crucial for Google Cloud support!
+
+    # 4. Authenticate with Google Cloud
+    # This uses the Service Account Key you stored in GitHub Secrets
+    - name: Auth with GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.gcp_key }}
+
+    # 5. Pull the Data
+    # --no-run-cache ensures we just get the data files, not pipeline run states
+    - name: Pull data from DVC
+      run: |
+        dvc pull --no-run-cache
+        
+    # 6. Run Data Quality Checks
+    - name: Run Data Quality Checks
+      env:
+        # Define these variables so the script knows how to label files!
+        TASK: "binary"  # or "multiclass"
+        FILE_PATTERN: "card_class_{}_embeddings.h5" 
+        CLASSES: "class_a,class_b,class_c,class_d" # Only needed if task is multiclass
+      run: |
+        # Run the script as a module
+        python -m arginator_protein_classifier.data_validation
+
+    # 7. Publish Report to PR
+    - name: Setup CML
+      if: always()
+      uses: iterative/setup-cml@v2
+
+    - name: Comment Report
+      if: always()
+      env:
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cml comment create data_report.md
