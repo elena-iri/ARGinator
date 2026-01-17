@@ -72,7 +72,7 @@ jobs:
         PYTHONPATH: "src"
         DATA_PATH: ".data"
         FILE_PATTERN: "card_class_{}_embeddings.h5" 
-        CLASSES: "class_a,class_b,class_c,class_d" # Only needed if task is multiclass
+        CLASSES: "class_a,class_b,class_c,class_d,non" # Only needed if task is multiclass
       run: |
         # Run the script as a module
         uv run python -m arginator_protein_classifier.data_validation
