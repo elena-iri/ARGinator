@@ -16,6 +16,11 @@ on:
     - '.dvc/**'
   workflow_dispatch: {}
 
+permissions:
+  contents: write       # Required to post comments on commits
+  pull-requests: write  # Required to post comments on Pull Requests
+  issues: write         # Sometimes needed for CML reports
+
 jobs:
   dvc:
     runs-on: ubuntu-latest
