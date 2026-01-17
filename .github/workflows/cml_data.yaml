@@ -64,7 +64,7 @@ jobs:
     - name: Run Data Quality Checks
       env:
         # Define these variables so the script knows how to label files!
-        PYTHON: "src"
+        PYTHONPATH: "src"
         TASK: "binary"  # or "multiclass"
         FILE_PATTERN: "card_class_{}_embeddings.h5" 
         CLASSES: "class_a,class_b,class_c,class_d" # Only needed if task is multiclass
