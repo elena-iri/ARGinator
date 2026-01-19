@@ -17,6 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-proj
 COPY src/ src/
 COPY configs/ configs/
 COPY README.md README.md
+COPY .env .env
 
 RUN uv sync --locked --no-cache --no-install-project
 

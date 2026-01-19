@@ -17,6 +17,26 @@ import wandb
 from arginator_protein_classifier.data import TL_Dataset
 from arginator_protein_classifier.model import Lightning_Model
 
+from google.cloud import secretmanager
+
+def get_secret(project_id, secret_id, version_id="latest"):
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+# Fetch key and set it as Env Var so WandB finds it automatically
+try:
+    # Only fetch if not already set (allows local runs to still work)
+    if "WANDB_API_KEY" not in os.environ:
+        print("Fetching WandB key from Secret Manager...")
+        api_key = get_secret("arginator", "WANDB_API_KEY")
+        os.environ["WANDB_API_KEY"] = api_key.strip() # .strip() removes accidental newlines
+        wandb.login(key=api_key.strip())
+        
+except Exception as e:
+    print(f"Could not fetch secret: {e}")
+
 # from arginator_protein_classifier.model import Model
 # from arginator_protein_classifier.data import get_dataloaders
 
