@@ -41,6 +41,7 @@ dependencies = [
     "uvicorn==0.34.0",
     "wandb>=0.23.1",
     "python-multipart>=0.0.21",
+    "google-cloud-run>=0.14.0",
 ]
 
 [dependency-groups]

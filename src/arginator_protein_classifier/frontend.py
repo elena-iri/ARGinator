@@ -2,12 +2,27 @@ import streamlit as st
 import requests
 import time
 import pandas as pd
+import os
+from google.cloud import run_v2
 
 # --- Page Config ---
 st.set_page_config(page_title="Arginator Protein Classifier", layout="centered")
 
 st.sidebar.header("Configuration")
-BACKEND_URL = st.sidebar.text_input("Backend URL", "http://127.0.0.1:8000")
+@st.cache_resource  
+def get_backend_url():
+    """Get the URL of the backend service."""
+    parent = "projects/arginator/locations/europe-west1"
+    client = run_v2.ServicesClient()
+    services = client.list_services(parent=parent)
+    for service in services:
+        if service.name.split("/")[-1] == "production-model":
+            return service.uri
+    name = os.environ.get("BACKEND", None)
+    return name
+
+BACKEND_URL = st.sidebar.text_input("Backend URL", value = get_backend_url())
+
 
 st.title("🧬 Protein Classification System")
 st.markdown("Upload a FASTA file to classify proteins using the T5 + Lightning model.")
