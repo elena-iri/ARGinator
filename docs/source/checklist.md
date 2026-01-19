@@ -86,7 +86,7 @@ will check the repositories and the code to verify your answers.
 * [✅] Add a linting step to your continuous integration (M17) Elena 
 * [✅] Add pre-commit hooks to your version control setup (M18) Elena 
 * [✅] Add a continues workflow that triggers when data changes (M19) Free 
-* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Free 
+* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Elena 
 * [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
 * [ ] Create a trigger workflow for automatically building your docker images (M21) Claudio 
 * [ ] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
@@ -99,7 +99,7 @@ will check the repositories and the code to verify your answers.
 
 ### Week 3
 
-* [ ] Check how robust your model is towards data drifting (M27)
+* [ ] Check how robust your model is towards data drifting (M27) Elena
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
