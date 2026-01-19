@@ -39,7 +39,7 @@ class InferenceDataset(Dataset):
 load_dotenv() 
 
 # --- 2. THE PURE PYTHON FUNCTION (Importable) ---
-def run_inference(checkpoint_path: str, data_path: str, batch_size: int = 32, output_dir: str = None):
+def run_inference(checkpoint_path: str, data_path: str, batch_size: int = 32, output_dir: str = None, job_id: str = None):
     """
     Pure Python function to run inference. 
     Can be imported and called from any other script.
@@ -120,9 +120,10 @@ def run_inference(checkpoint_path: str, data_path: str, batch_size: int = 32, ou
         if not save_dir.exists():
             save_dir.mkdir(parents=True, exist_ok=True)
             
-        output_csv = save_dir / f"predictions_{h5_file.stem}_{task_name}.csv"
+        output_csv = save_dir / f"{job_id}_results.csv"
         pd.DataFrame(results).to_csv(output_csv, index=False)
         log.info(f"Saved predictions to {output_csv}")
+        
 
 
 # --- 3. THE HYDRA WRAPPER (CLI Only) ---
