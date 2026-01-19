@@ -1,0 +1,23 @@
+# Ignore git history (This is likely your 1.6GB culprit)
+.git/
+.gitignore
+
+# Ignore Python environments
+.venv/
+__pycache__/
+
+# Ignore outputs
+wandb/
+models/
+outputs/
+
+# Ignore IDE settings
+.vscode/
+.idea/
+
+.pytest_cache/
+.ruff_cache/
+
+.dvc/cache/
+
+.data/

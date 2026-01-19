@@ -1,0 +1,12 @@
+workerPoolSpecs:
+  - machineSpec:
+      machineType: n1-standard-4  # Good basic CPU: 4 vCPUs, 15GB RAM
+    replicaCount: 1
+    containerSpec:
+      # The full path to your image in Artifact Registry
+      imageUri: europe-west1-docker.pkg.dev/arginator/arginator-registry/protein-classifier:latest
+      
+      # Arguments passed directly to your python script
+      args:
+        - "--epochs=5"
+        - "--batch_size=32"
