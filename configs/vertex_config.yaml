@@ -20,4 +20,4 @@ workerPoolSpecs:
         - name: WANDB_PROJECT
           value: "arginator_protein_classifier"
       args:
-        - "paths.data=/gcs/arginator-data/.data"
+        - "paths.data=/gcs/arginator_data/.data"

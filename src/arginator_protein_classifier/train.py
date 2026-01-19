@@ -81,13 +81,15 @@ def train(cfg: DictConfig) -> None:
     # )
     log.info("Training Day and Night")
 
+    root_data_folder = os.path.join(project_root, ".data")
+
     data = TL_Dataset(
         data_path=cfg.paths.data,
         task=cfg.task.name,
         batch_size=cfg.experiment.batch_size,
         split_ratios=cfg.experiment.splits,
         seed=cfg.processing.seed,
-        output_folder=cfg.paths.data,
+        output_folder=root_data_folder,
     )
 
     model = Lightning_Model(
