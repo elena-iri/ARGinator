@@ -46,14 +46,19 @@ async def startup_event():
     MODEL, VOCAB = await run_in_threadpool(load_t5_model, model_dir=CFG.paths.t5_model_dir)
     print("T5 Model loaded successfully.")
 
-def update_job_progress(job_id, current, total):
+def update_job_progress_scaled(job_id, current, total, start_percent, end_percent):
     if total > 0:
-        percent = int((current / total) * 100)
-        JOBS[job_id]["progress"] = percent
+        raw_fraction = current / total
+        # Calculate how much of the "global" bar this task occupies
+        span = end_percent - start_percent
+        scaled_progress = int(start_percent + (raw_fraction * span))
+        JOBS[job_id]["progress"] = scaled_progress
 
 def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_type: str):
     try:
-        progress_callback = lambda c, t: update_job_progress(job_id, c, t)
+        # STEP 1: CONVERSION (0% -> 60%)
+        # We tell the callback to map the conversion progress to the 0-60 range
+        progress_callback = lambda c, t: update_job_progress_scaled(job_id, c, t, 0, 60)
 
         print(f"[{job_id}] Starting Conversion...")
         run_conversion(
@@ -65,13 +70,14 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
             callback=progress_callback
         )
 
-        # 2. Run Classification
+        # STEP 2: INFERENCE (60% -> 80%)
+        JOBS[job_id]["progress"] = 65 # Jump to 65% to show step change
+        
         if classification_type == 'Multiclass':
             weights_dir = CFG.paths.multiclass_model_dir
         else:
             weights_dir = CFG.paths.binary_model_dir
         
-        # Ensure we point to the actual file
         weights_path = os.path.join(weights_dir, "model.ckpt") 
       
         if not os.path.exists(weights_path):
@@ -83,7 +89,6 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
             output_dir=CFG.paths.data_inference_dir,
             job_id=job_id,
         )
-
         
         output_csv = os.path.join(CFG.paths.data_inference_dir, f"{job_id}_results.csv")
         
@@ -91,24 +96,37 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
             raise FileNotFoundError(f"Inference failed to generate output file: {output_csv}")
 
         df = pd.read_csv(output_csv)
+        
+        # STEP 3: UMAP VISUALIZATION (80% -> 99%)
+        JOBS[job_id]["progress"] = 80 # Update progress before starting UMAP
+        
         file_map = {
-        "card_A": CFG.paths.card_A,
-        "card_B": CFG.paths.card_B,
-        "card_C": CFG.paths.card_C,
-        "card_D": CFG.paths.card_D,
-        "query": saved_h5,
+            "card_A": CFG.paths.card_A,
+            "card_B": CFG.paths.card_B,
+            "card_C": CFG.paths.card_C,
+            "card_D": CFG.paths.card_D,
+            "query": saved_h5,
         }
 
         visualizer = UMAPEmbeddingVisualizer()
-        visualizer.run(file_map, binary_mode=(classification_type == "Binary"), output_filename=os.path.join(CFG.paths.data_inference_dir, f"{job_id}_umap_plot.png"))
-        # 4. Update Job
+        
+        # Determine output path
+        umap_output = os.path.join(CFG.paths.data_inference_dir, f"{job_id}_umap_plot.png")
+        
+        visualizer.run(
+            file_map, 
+            binary_mode=(classification_type == "Binary"), 
+            output_filename=umap_output
+        )
+
+        # STEP 4: COMPLETE (100%)
         JOBS[job_id]["status"] = "completed"
-        JOBS[job_id]["progress"] = 100
-        # We store the csv path in the result for internal reference
+        JOBS[job_id]["progress"] = 100 # Finally hit 100%
+        
         JOBS[job_id]["result"] = {
             "classification_type": classification_type,
             "csv_path": output_csv,
-            "preview": df.head(5).to_dict() # Send small preview to frontend
+            "preview": df.head(5).to_dict() 
         }
 
     except Exception as e:
@@ -119,7 +137,6 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
     finally:
         if os.path.exists(temp_fa): 
             os.remove(temp_fa)
-
 @app.post("/submit_job")
 async def submit_job(
     background_tasks: BackgroundTasks,

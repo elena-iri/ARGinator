@@ -1,7 +1,5 @@
 data: ".data"
 model_filename: "model.pth"
-
-
 t5_model_dir: ".models/convert"
 binary_model_dir: ".models/binary"
 multiclass_model_dir: ".models/multiclass"
@@ -10,4 +8,3 @@ card_A: ".data/card_class_a_embeddings.h5"
 card_B: ".data/card_class_b_embeddings.h5"
 card_C: .data/card_class_c_embeddings.h5
 card_D: ".data/card_class_d_embeddings.h5"
-data_inference_dir: ".data/inference"

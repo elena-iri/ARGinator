@@ -3,8 +3,9 @@ import numpy as np
 import pandas as pd
 import umap
 import matplotlib.pyplot as plt
+import matplotlib
 
-
+matplotlib.use("Agg")
 class UMAPEmbeddingVisualizer:
     """Visualize protein embeddings using UMAP dimensionality reduction."""
     
@@ -16,7 +17,7 @@ class UMAPEmbeddingVisualizer:
             n_neighbors: Number of neighbors for UMAP
             min_dist: Minimum distance for UMAP
             metric: Distance metric for UMAP
-            random_state: Random seed for reproducibility
+            om_state: Random seed for reproducibility
         """
         self.n_neighbors = n_neighbors
         self.min_dist = min_dist

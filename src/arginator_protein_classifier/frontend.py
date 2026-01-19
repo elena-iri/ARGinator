@@ -64,7 +64,7 @@ if st.button("Run Inference", type="primary"):
                                 st.image(
                                     plot_response.content, 
                                     caption="UMAP Projection of Protein Embeddings",
-                                    use_container_width=True # updated from use_column_width for newer streamlit
+                                    width= 'stretch'
                                 )
                             else:
                                 st.warning("Visualization plot not available for this run.")
@@ -78,7 +78,7 @@ if st.button("Run Inference", type="primary"):
                             if "preview" in result:
                                 preview_df = pd.DataFrame(result["preview"])
                                 st.write("Preview of first 5 rows:")
-                                st.dataframe(preview_df, width=None) # let streamlit handle width
+                                st.dataframe(preview_df, width='stretch')
                             
                             # Fetch the full CSV for download
                             download_res = requests.get(f"{BACKEND_URL}/download/{job_id}")
