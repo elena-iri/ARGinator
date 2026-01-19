@@ -122,7 +122,9 @@ will check the repositories and the code to verify your answers.
 ### Question 1
 > **Enter the group number you signed up on <learn.inside.dtu.dk>**
 >
-> Answer: Group 16
+> Answer:
+
+Group 16
 
 ### Question 2
 > **Enter the study number for each member in the group**
@@ -132,6 +134,7 @@ will check the repositories and the code to verify your answers.
 > *s243312, sXXXXXX, sXXXXXX*
 >
 > Answer:
+
 s243312, s215141, s253510, s215145
 
 ### Question 3
@@ -145,7 +148,8 @@ s243312, s215141, s253510, s215145
 > *package to do ... and ... in our project*.
 >
 > Answer:
-Covered by the course but we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 portein embedding files.
+
+(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files.
 
 --- question 3 fill here ---
 
@@ -166,9 +170,8 @@ Covered by the course but we used the Pytorch-Lightning framework to reduce boil
 > *complete copy of our development environment, one would have to run the following commands*
 >
 > Answer:
-We used uv for managing our dependencies. The list of dependencies was auto-generated using uv. To get a complete copy of our development environment, one would have to run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`.
 
---- question 4 fill here ---
+We used uv for managing our dependencies and the Python environment. Our direct list of dependencies was auto-generated using uv and are declared in the `pyproject.toml` file, while `uv` generates and maintains the cross-platform `uv.lock` file. To get a complete copy of our development environment, first clone this repo, next run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`. We also implemented DVC to manage large files so to pull the most up to date data run `uv run dvc pull`.
 
 ### Question 5
 
@@ -184,7 +187,7 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 5 fill here ---
+We closely followed the structure of the cookiecutter template. We filled out the configs, dockerfiles, tests and src folders. We have added a folder for outputs and for wandb logging (the latter is .gitignored) and removed the reports folder as this was redundant for us. 
 
 ### Question 6
 
@@ -199,7 +202,7 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 6 fill here ---
+We used the ruff libary for code linting and formatting. We also used Typer for adding the CLI commands (to e.g. `uv run train` instead of `uv run train.py`). These concepts are important in larger projects to ensure that code is clean and consistent making it possible for all team members to easily follow what is going on in the code, which is especially useful for the case that they want to continue the work on something.
 
 ## Version control
 
@@ -218,7 +221,7 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 7 fill here ---
+In total we implemented 4 tests. We are primarily testing the train, evaluate, data processing and api scripts as those are the most critical in our application. The tests and code coverage are documented in the `TESTS.md` file in the tests folder.
 
 ### Question 8
 
@@ -233,7 +236,25 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 8 fill here ---
+*Generated via `pytest-cov`*
+
+The overall project test coverage is **68%**. Below is the detailed breakdown by module:
+
+| File | Statements | Missed | Coverage | Missing Lines |
+| :--- | :---: | :---: | :---: | :--- |
+| `data.py` | 171 | 72 | **58%** | 37, 47, ... , 298-329 |
+| `model.py` | 88 | 30 | **66%** | 61-62, 86-105, 108-119 |
+| `train.py` | 76 | 4 | **95%** | 109-110, 139, 174 |
+| `__init__.py` | 0 | 0 | **100%** | - |
+| **TOTAL** | **335** | **106** | **68%** | |
+
+*Analysis of Missing Lines*
+* **`data.py` (58%)**: The coverage is lower because `test_data.py` focuses on the **Binary** task flow.
+    * **Missing Logic:** The `multiclass` labeling logic in `_labeling` (lines 91-102) and specific error handling branches (e.g., file read errors) are not triggered.
+    * **Hydra Entry Point:** The `main()` function and CLI entry block (lines 298-334) are not executed by the unit tests.
+* **`model.py` (66%)**:
+    * **Lightning Methods:** The tests check `forward` and `backward`, but they do not execute `training_step` (86-105) or `validation_step` (108-119). These methods are usually called by the Lightning Trainer, which we mocked in `test_train.py`. To increase this, we would need to manually call `model.training_step()` in a unit test.
+* **`train.py` (95%)**: High coverage. The few missing lines correspond to specific `multiclass` ROC plotting branches (since the test used binary data) or specific fallback logic for dataloaders.
 
 ### Question 9
 
@@ -248,7 +269,7 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 9 fill here ---
+Yes, we made use of both branches and PRs in our project. For each new feature (checklist item) that we implemented we would create a new branch e.g. `unit_tests`, `data-version-control`, `gcp_cloud` and then merge these, via pull requests, into a `development` branch. If we were then happy with a version of the code and everything seemed to be working properly we would merge this `development` branch into `main` (also via PR). For the Pull Requests we tried to always wait for at least one other group member to have a look and review before merging the branches. This setup allowed for revisiting certain features when they no longer worked with the current code due to other conflicting features. An example of this would be the `unit_tests` which we had to update after we changed certain parts of our data processing and training code with torch-lightning.
 
 ### Question 10
 
@@ -263,7 +284,9 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 10 fill here ---
+Yes, DVC was heavily utilized with GCP in our project as our remote backend to manage the large protein embedding files.
+
+It improved our project primarily by decoupling the code from the data while maintaining a strict link between them. Instead of bloating the Git repository with gigabytes of .h5 files, we instead committed small .dvc pointer files. This ensured that every commit in our history referenced the exact version of the dataset used at that time, making experiments fully reproducible. If a model performance dropped, we could checkout the previous Git commit and run `uv run dvc pull` to instantly revert the data state to match with the code.
 
 ### Question 11
 
@@ -280,7 +303,15 @@ We used uv for managing our dependencies. The list of dependencies was auto-gene
 >
 > Answer:
 
---- question 11 fill here ---
+We organized our Continuous Integration (CI) into four workflows to efficiently handle different parts of the pipeline:
+
+1. Code Quality & Linting: We use two workflows, `Code linting` and `Pre-commit CI`. These run ruff to enforce coding standards and formatting. The pre-commit workflow is particularly robust; it can automatically fix minor style issues and push those changes back to the branch, reducing manual interventions.
+2. Unit Testing: Our `Unit Tests` workflow is designed for maximum compatibility. We utilize a build matrix strategy to test our code across three operating systems: Ubuntu, Windows, and macOS, two Python versions: 3.11, 3.12, and two different PyTorch versions: 2.4.0, 2.5.1. This ensures that the package is robust and platform-agnostic.
+3. Data Integrity: Uniquely, we implement a DVC Workflow that triggers specifically on changes to .dvc files. It pulls the data from Google Cloud Storage, runs a custom validation script, and uses CML to post a visual data quality report as a comment directly to the Pull Requests.
+
+We make extensive use of caching for optimizing runtime. Across all workflows, we use astral-sh/setup-uv with enable-cache: true to cache our Python dependencies. Additionally, in the data workflow, we explicitly cache the .dvc/cache directory, which significantly speeds up the downloading of large protein embedding files from the cloud.
+
+An example of our testing workflow can be seen here: [https://github.com/elena-iri/ARGinator/actions/runs/21096186032]
 
 ## Running code and tracking experiments
 
