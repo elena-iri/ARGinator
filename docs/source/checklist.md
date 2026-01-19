@@ -90,12 +90,12 @@ will check the repositories and the code to verify your answers.
 * [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
 * [ ] Create a trigger workflow for automatically building your docker images (M21) Claudio 
 * [ ] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
-* [ ] Create a FastAPI application that can do inference using your model (M22) Toms
-* [ ] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
+* [✅] Create a FastAPI application that can do inference using your model (M22) Toms
+* [] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
 * [ ] Write API tests for your application and setup continues integration for these (M24) Toms 
 * [ ] Load test your application (M24) - MAX 
 * [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25) **optional** 
-* [ ] Create a frontend for your API (M26) Toms
+* [✅] Create a frontend for your API (M26) Toms
 
 ### Week 3
 
