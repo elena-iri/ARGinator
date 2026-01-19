@@ -122,9 +122,7 @@ will check the repositories and the code to verify your answers.
 ### Question 1
 > **Enter the group number you signed up on <learn.inside.dtu.dk>**
 >
-> Answer:
-
-Group 16
+> Answer: Group 16
 
 ### Question 2
 > **Enter the study number for each member in the group**
@@ -134,8 +132,7 @@ Group 16
 > *s243312, sXXXXXX, sXXXXXX*
 >
 > Answer:
-
-s243312, s, s, s
+s243312, s215141, s253510, s215145
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -148,6 +145,7 @@ s243312, s, s, s
 > *package to do ... and ... in our project*.
 >
 > Answer:
+Covered by the course but we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 portein embedding files.
 
 --- question 3 fill here ---
 
@@ -168,6 +166,7 @@ s243312, s, s, s
 > *complete copy of our development environment, one would have to run the following commands*
 >
 > Answer:
+We used uv for managing our dependencies. The list of dependencies was auto-generated using uv. To get a complete copy of our development environment, one would have to run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`.
 
 --- question 4 fill here ---
 
