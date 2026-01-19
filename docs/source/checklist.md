@@ -149,9 +149,7 @@ s243312, s215141, s253510, s215145
 >
 > Answer:
 
-(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files.
-
---- question 3 fill here ---
+(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor.
 
 ## Coding environment
 
@@ -330,7 +328,7 @@ An example of our testing workflow can be seen here: [https://github.com/elena-i
 >
 > Answer:
 
---- question 12 fill here ---
+We used separate config files for experiment, optimizer, paths, processing and the task (binary/multiclass), based on which task was then specified in the `train_config.yaml` the corresponding `output_dim` would be loaded from the task config folder. We used Hydra for keeping config log files of the experiment, this slightly changed the default double hyphen structure from typer to use a full stop for custom specifications e.g. `uv run train experiment.lr=1e-2`.
 
 ### Question 13
 
@@ -345,7 +343,14 @@ An example of our testing workflow can be seen here: [https://github.com/elena-i
 >
 > Answer:
 
---- question 13 fill here ---
+We ensured reproducibility by tightly coupling the code, data, and configuration using a combination of Hydra, WandB, and DVC.
+We used Hydra to manage complex, hierarchical configurations, ensuring that all hyperparameters are defined explicitly in code rather than hardcoded. whenever an experiment is run, the following happens:
+
+- WandB automatically captures the fully resolved Hydra configuration (config.yaml), ensuring we know the exact parameters used, even if command-line overrides were applied.
+- It logs the Git commit hash, which locks the version of the code.
+- Because we are using DVC, that specific Git commit also points to the exact version of the dataset used during training.
+
+To reproduce a past experiment, one would simply have to checkout the specific git commit logged in WandB (restoring both code and DVC data pointers) and execute the training script using the saved config file from the WandB dashboard. This guarantees that the exact code, data and parameters are reproduced.
 
 ### Question 14
 
@@ -362,7 +367,17 @@ An example of our testing workflow can be seen here: [https://github.com/elena-i
 >
 > Answer:
 
---- question 14 fill here ---
+<img width="773" height="650" alt="image" src="https://github.com/user-attachments/assets/3b816abb-eb8b-496b-b765-cb28e79200b6" />
+
+As seen in the above image we are tracking the basic training metrics such as the loss, recall and precision during a training run that inform us whether or not the model is improving over epochs.
+
+<img width="640" height="480" alt="media_images_roc_curve_10_d2d2d0cc80e2366999c7" src="https://github.com/user-attachments/assets/a37a2ecd-3d25-4851-84ce-70eec32fa365" />
+
+We also create and store Receiver Operating Characteristic (ROC) curves using matplotlib at the end of training and upload these as a .png to WandB, to understand if the model is just randomly guessing or making reasonable classifications. 
+
+<img width="874" height="586" alt="image" src="https://github.com/user-attachments/assets/806fa7e1-29de-49fc-8023-71c656f4fa13" />
+
+We also created a hyperparameter sweep to see which hyperparameters most significantly affect the validation loss, we saw that the most drastic differences are seen only when the batch size is lowered but that other parameters (in the ranges we tested) did not effect the loss to as large an extent.
 
 ### Question 15
 
