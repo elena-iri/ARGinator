@@ -89,9 +89,9 @@ will check the repositories and the code to verify your answers.
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Elena 
 * [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
 * [ ] Create a trigger workflow for automatically building your docker images (M21) Claudio 
-* [ ] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
+* [✅] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
 * [✅] Create a FastAPI application that can do inference using your model (M22) Toms
-* [] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
+* [✅] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
 * [✅] Write API tests for your application and setup continues integration for these (M24) Toms 
 * [✅] Load test your application (M24) - Toms 
 * [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25) **optional** 
@@ -99,7 +99,7 @@ will check the repositories and the code to verify your answers.
 
 ### Week 3
 
-* [ ] Check how robust your model is towards data drifting (M27) Elena
+* [✅] Check how robust your model is towards data drifting (M27) Elena
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
@@ -114,7 +114,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Publish the documentation to GitHub Pages (M32)
 * [ ] Revisit your initial project description. Did the project turn out as you wanted?
 * [ ] Create an architectural diagram over your MLOps pipeline
-* [ ] Make sure all group members have an understanding about all parts of the project
+* [✅] Make sure all group members have an understanding about all parts of the project
 * [ ] Uploaded all your code to GitHub
 
 ## Group information
