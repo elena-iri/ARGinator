@@ -29,18 +29,21 @@ async def startup_event():
 
     # 1. Resolve Paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    # Go up from src/arginator_protein_classifier -> src -> ARGinator
     project_root = os.path.dirname(os.path.dirname(current_dir))
     
     # 2. Initialize Hydra
-    # We use a relative path from this script to the configs folder
-    # ../../configs
     if GlobalHydra.instance().is_initialized():
         GlobalHydra.instance().clear()
 
-    with initialize(version_base=None, config_path="../../configs"):
-        CFG = compose(config_name="train_config")
+    # Example: "paths.data=/gcs/bucket;paths.model_dir=/gcs/bucket/models"
+    overrides_str = os.environ.get("HYDRA_OVERRIDES", "")
+    overrides = [o.strip() for o in overrides_str.split(";")] if overrides_str else []
 
+    with initialize(version_base=None, config_path="../../configs"):
+        # Pass the overrides here
+        CFG = compose(config_name="train_config", overrides=overrides)
+
+    print(f"Loaded Config with overrides: {overrides}")
     
     print("Loading T5 Model...")
     MODEL, VOCAB = await run_in_threadpool(load_t5_model, model_dir=CFG.paths.t5_model_dir)
