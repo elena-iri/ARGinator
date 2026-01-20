@@ -92,7 +92,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
 * [✅] Create a FastAPI application that can do inference using your model (M22) Toms
 * [] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
-* [ ] Write API tests for your application and setup continues integration for these (M24) Toms 
+* [✅] Write API tests for your application and setup continues integration for these (M24) Toms 
 * [✅] Load test your application (M24) - Toms 
 * [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25) **optional** 
 * [✅] Create a frontend for your API (M26) Toms
