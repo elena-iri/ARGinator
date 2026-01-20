@@ -227,6 +227,7 @@ dependencies = [
     { name = "dvc", extra = ["gs"] },
     { name = "dvc-gdrive" },
     { name = "fastapi" },
+    { name = "google-cloud-run" },
     { name = "h5py" },
     { name = "hydra-core" },
     { name = "loguru" },
@@ -268,6 +269,7 @@ requires-dist = [
     { name = "dvc", extras = ["gs"], specifier = ">=3.66.1" },
     { name = "dvc-gdrive", specifier = ">=3.0.1" },
     { name = "fastapi", specifier = "==0.115.6" },
+    { name = "google-cloud-run", specifier = ">=0.14.0" },
     { name = "h5py", specifier = ">=3.15.1" },
     { name = "hydra-core", specifier = ">=1.3.2" },
     { name = "loguru", specifier = ">=0.7.3" },
@@ -1436,6 +1438,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a6/03/ef0bc99d0e0faf4fdbe67ac445e18cdaa74824fd93cd069e7bb6548cb52d/google_cloud_core-2.5.0.tar.gz", hash = "sha256:7c1b7ef5c92311717bd05301aa1a91ffbc565673d3b0b4163a52d8413a186963", size = 36027, upload-time = "2025-10-29T23:17:39.513Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/89/20/bfa472e327c8edee00f04beecc80baeddd2ab33ee0e86fd7654da49d45e9/google_cloud_core-2.5.0-py3-none-any.whl", hash = "sha256:67d977b41ae6c7211ee830c7912e41003ea8194bff15ae7d72fd6f51e57acabc", size = 29469, upload-time = "2025-10-29T23:17:38.548Z" },
+]
+
+[[package]]
+name = "google-cloud-run"
+version = "0.14.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "grpc-google-iam-v1" },
+    { name = "grpcio" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cb/8e/cbac22ae707f771be4592b160c2f43fa02ee2b0370f786f7b76d1a1f90a9/google_cloud_run-0.14.0.tar.gz", hash = "sha256:e3a142c6a4d7ca8a944858cb1c142c13414e78eed48c53dd3be53f86b260ee95", size = 446713, upload-time = "2026-01-15T13:04:26.398Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/5e/6a6f7b7966fd5dde1e013ac0929e0e393ee45609d6279a4bae5e1d80abdc/google_cloud_run-0.14.0-py3-none-any.whl", hash = "sha256:2ffd6c3f5973905960312e9c3d91076b089490f546733f02823667a50d414d64", size = 401908, upload-time = "2026-01-15T12:17:07.992Z" },
 ]
 
 [[package]]

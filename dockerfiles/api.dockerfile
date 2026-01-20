@@ -9,4 +9,6 @@ COPY src src/
 
 RUN uv sync --frozen
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.arginator_protein_classifier.api:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE $PORT
+
+ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "$PORT", "--server.address=0.0.0.0"]
