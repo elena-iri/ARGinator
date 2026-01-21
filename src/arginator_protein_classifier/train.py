@@ -1,27 +1,27 @@
+from re import split
+import torch
+import matplotlib.pyplot as plt
+import wandb
+import hydra
 import logging
 import os
-from re import split
-from dotenv import load_dotenv
-import hydra
 import matplotlib.pyplot as plt
-import torch
-from hydra.core.hydra_config import HydraConfig
-from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
+from hydra.core.hydra_config import HydraConfig
+
+from hydra.utils import instantiate
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-from sklearn.metrics import RocCurveDisplay, accuracy_score, f1_score, precision_score, recall_score
-
-import wandb
-from arginator_protein_classifier.data import TL_Dataset
+from pytorch_lightning.callbacks import ModelCheckpoint
 from arginator_protein_classifier.model import Lightning_Model
-
+from arginator_protein_classifier.data import TL_Dataset
+from sklearn.metrics import RocCurveDisplay, accuracy_score, f1_score, precision_score, recall_score
 # from arginator_protein_classifier.model import Model
 # from arginator_protein_classifier.data import get_dataloaders
+
 # 1. Setup Logger
 log = logging.getLogger(__name__)
-load_dotenv()
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 # Get absolute path to configs
@@ -29,26 +29,23 @@ current_file_path = os.path.abspath(__file__)
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
 config_path = os.path.join(project_root, "configs")
 
-
-
 @hydra.main(version_base=None, config_path=config_path, config_name="train_config")
 def train(cfg: DictConfig) -> None:
     """Train the model using Hydra configuration."""
-
+    
     # Get the hydra output directory
     output_dir = HydraConfig.get().runtime.output_dir
     log.info(f"Saving outputs to: {output_dir}")
 
     log.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
-
+    
     hparams = cfg.experiment
     torch.manual_seed(hparams.seed)
 
     wandb_logger = WandbLogger(
-        entity = os.environ["WANDB_ENTITY"],
-        project=os.environ["WANDB_PROJECT"],
+        project="arginator_protein_classifier",
         config=OmegaConf.to_container(cfg.experiment, resolve=True),
-        log_model=True,  # Automatically logs model checkpoints
+        log_model=True # Automatically logs model checkpoints
     )
 
     # run = wandb.init(
@@ -59,26 +56,23 @@ def train(cfg: DictConfig) -> None:
     #       #      "epochs": hparams.epochs,
     #        #     "seed": hparams.seed},
     #     config=OmegaConf.to_container(cfg.experiment, resolve=True),
-    # )
+    # )    
     log.info("Training Day and Night")
 
-    data = TL_Dataset(
-        data_path=cfg.paths.data,
-        task=cfg.task.name,
-        batch_size=cfg.experiment.batch_size,
-        split_ratios=cfg.experiment.splits,
-        seed=cfg.processing.seed,
-        output_folder=cfg.paths.data,
-    )
+    data = TL_Dataset(data_path=cfg.paths.data,
+                      task = cfg.task.name,
+                      batch_size = cfg.experiment.batch_size,
+                      split_ratios = cfg.experiment.splits,
+                      seed = cfg.processing.seed,
+                      output_folder = cfg.paths.data
+                      )
 
-    model = Lightning_Model(
-        input_dim=1024,
-        output_dim=cfg.task.output_dim,
-        dropout_rate=cfg.experiment.dropout_rate,
-        optimizer_config=cfg.optimizer,
-        loss_fn=cfg.experiment.loss_function,
-    )
-
+    model = Lightning_Model(input_dim=1024, 
+                            output_dim = cfg.task.output_dim,
+                            dropout_rate = cfg.experiment.dropout_rate,
+                            optimizer_config = cfg.optimizer,
+                            loss_fn = cfg.experiment.loss_function)
+    
     # 3. callbacks (Optional but recommended)
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
@@ -91,11 +85,11 @@ def train(cfg: DictConfig) -> None:
     # Trainer. We can also use hydra to instantiate the Trainer by modifying config file (too lazy to do it)
     trainer = Trainer(
         max_epochs=cfg.experiment.epochs,
-        accelerator="auto",  # Automatically detects GPU/MPS/CPU
+        accelerator="auto", # Automatically detects GPU/MPS/CPU
         devices=1,
         default_root_dir=output_dir,
         callbacks=[checkpoint_callback],
-        logger=wandb_logger,
+        logger = wandb_logger
     )
 
     trainer.fit(model, data)
@@ -105,10 +99,10 @@ def train(cfg: DictConfig) -> None:
     # 7. Post-Training Evaluation
     # Retrieve dataloaders from the DataModule for final manual eval
     # (Assuming TL_Dataset has these methods/properties, typical for DataModules)
-    is_binary = cfg.task.output_dim == 2
+    is_binary = (cfg.task.output_dim==2)
     avg_method = "binary" if is_binary else "macro"
 
-    if hasattr(data, "test_dataloader"):
+    if hasattr(data, 'test_dataloader'):
         test_loader = data.test_dataloader()
     else:
         # Fallback if TL_Dataset constructs them differently
@@ -123,9 +117,7 @@ def train(cfg: DictConfig) -> None:
     final_test_recall = test_metrics["recall"]
     final_test_f1 = test_metrics["f1"]
 
-    log.info(
-        f"Final Test Metrics: Accuracy: {final_test_accuracy:.4f}, Precision: {final_test_precision:.4f}, Recall: {final_test_recall:.4f}, F1: {final_test_f1:.4f}"
-    )
+    log.info(f"Final Test Metrics: Accuracy: {final_test_accuracy:.4f}, Precision: {final_test_precision:.4f}, Recall: {final_test_recall:.4f}, F1: {final_test_f1:.4f}")
 
     # Update WandB Summary
     wandb.summary["test_accuracy"] = final_test_accuracy
@@ -149,7 +141,7 @@ def train(cfg: DictConfig) -> None:
     # Note: WandbLogger with log_model=True automatically handles artifact saving for the best model.
 
 
-def evaluate(model, dataloader, device, average_method="binary"):
+def evaluate(model, dataloader, device, average_method = "binary"):
     model.eval()
     model.to(device)
 
@@ -170,27 +162,26 @@ def evaluate(model, dataloader, device, average_method="binary"):
 
     metrics = {
         "accuracy": accuracy_score(targets.cpu(), preds.cpu()),
-        "precision": precision_score(targets.cpu(), preds.cpu(), average=average_method),
-        "recall": recall_score(targets.cpu(), preds.cpu(), average=average_method),
-        "f1": f1_score(targets.cpu(), preds.cpu(), average=average_method),
+        "precision": precision_score(targets.cpu(), preds.cpu(), average=average_method), 
+        "recall": recall_score(targets.cpu(), preds.cpu(), average=average_method),       
+        "f1": f1_score(targets.cpu(), preds.cpu(), average=average_method),               
         "logits": logits,
         "targets": targets,
     }
     return metrics
 
-
 if __name__ == "__main__":
     train()
     # # SETUP MODEL
     # model = Model(
-    #     input_dim=1024,
-    #     output_dim=cfg.task.output_dim,
+    #     input_dim=1024, 
+    #     output_dim=cfg.task.output_dim, 
     #     dropout_rate=hparams.dropout_rate
     # ).to(DEVICE)
 
     # # SETUP DATA
     # train_dataloader, _, _ = get_dataloaders(
-    #     cfg.paths.data,
+    #     cfg.paths.data, 
     #     task = cfg.task.name,
     #     batch_size=hparams.batch_size,
     #     seed=cfg.processing.seed
@@ -207,13 +198,13 @@ if __name__ == "__main__":
     #     model.train()
     #     for i, (img, target) in enumerate(train_dataloader):
     #         img, target = img.to(DEVICE), target.to(DEVICE)
-
+            
     #         optimizer.zero_grad()
     #         y_pred = model(img)
     #         loss = loss_fn(y_pred, target)
     #         loss.backward()
     #         optimizer.step()
-
+            
     #         statistics["train_loss"].append(loss.item())
     #         accuracy = (y_pred.argmax(dim=1) == target).float().mean().item()
     #         statistics["train_accuracy"].append(accuracy)
@@ -222,7 +213,7 @@ if __name__ == "__main__":
     #             log.info(f"Epoch: {epoch}, iter {i}, loss: {loss.item():.4f}, Acc: {accuracy:.2f}")
 #     # SETUP DATA
 #     train_dataloader, val_dataloader, test_dataloader = get_dataloaders(
-#         cfg.paths.data,
+#         cfg.paths.data, 
 #         batch_size=hparams.batch_size,
 #         seed=cfg.processing.seed
 #     )
@@ -236,13 +227,13 @@ if __name__ == "__main__":
 #         for i, (img, target) in enumerate(train_dataloader):
 #             model.train()
 #             img, target = img.to(DEVICE), target.to(DEVICE)
-
+            
 #             optimizer.zero_grad()
 #             y_pred = model(img)
 #             loss = loss_fn(y_pred, target)
 #             loss.backward()
 #             optimizer.step()
-
+            
 #             statistics["train_loss"].append(loss.item())
 #             accuracy = (y_pred.argmax(dim=1) == target).float().mean().item()
 #             statistics["train_accuracy"].append(accuracy)
@@ -251,11 +242,11 @@ if __name__ == "__main__":
 
 #             if i % 100 == 0:
 #                 log.info(f"Epoch: {epoch}, iter {i}, loss: {loss.item():.4f}, Acc: {accuracy:.2f}")
-
+                
 #                 # add a plot of histogram of the gradients
 #                 grads = torch.cat([p.grad.flatten() for p in model.parameters() if p.grad is not None], 0)
 #                 wandb.log({"gradients": wandb.Histogram(grads)})
-
+        
 #         #evalutaion after each epoch
 #         model.eval()
 #         #correct, total = 0, 0
@@ -271,32 +262,32 @@ if __name__ == "__main__":
 #                 statistics["val_accuracy"].append(val_accuracy)
 
 #                 wandb.log({"val_accuracy": val_accuracy, "val_loss": val_loss.item()})
+    
+    # log.info("Training Complete")
+    
+    # # SAVE ARTIFACTS TO HYDRA FOLDER
+    # # Force the filename to be inside the output_dir
+    # # cfg.paths.model_filename is just "model.pth"
+    # training_filename = f"model_{cfg.task.name}.pth"
+    # model_save_path = os.path.join(output_dir, training_filename)
+    
+    # torch.save(model.state_dict(), model_save_path)
+    # log.info(f"Model saved to {model_save_path}")
+    
+    # # Save Plot to the same folder
+    # training_plot_filename = f"training_plot_{cfg.task.name}.png"
+    # plot_save_path = os.path.join(output_dir, training_plot_filename)
+    
+    # fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    # axs[0].plot(statistics["train_loss"])
+    # axs[0].set_title("Train loss")
+    # axs[1].plot(statistics["train_accuracy"])
+    # axs[1].set_title("Train accuracy")
+    
+    # fig.savefig(plot_save_path)
+    # log.info(f"Plot saved to {plot_save_path}")
 
-# log.info("Training Complete")
-
-# # SAVE ARTIFACTS TO HYDRA FOLDER
-# # Force the filename to be inside the output_dir
-# # cfg.paths.model_filename is just "model.pth"
-# training_filename = f"model_{cfg.task.name}.pth"
-# model_save_path = os.path.join(output_dir, training_filename)
-
-# torch.save(model.state_dict(), model_save_path)
-# log.info(f"Model saved to {model_save_path}")
-
-# # Save Plot to the same folder
-# training_plot_filename = f"training_plot_{cfg.task.name}.png"
-# plot_save_path = os.path.join(output_dir, training_plot_filename)
-
-# fig, axs = plt.subplots(1, 2, figsize=(15, 5))
-# axs[0].plot(statistics["train_loss"])
-# axs[0].set_title("Train loss")
-# axs[1].plot(statistics["train_accuracy"])
-# axs[1].set_title("Train accuracy")
-
-# fig.savefig(plot_save_path)
-# log.info(f"Plot saved to {plot_save_path}")
-
-# Calculate final metrics on training and tesst data
+    #Calculate final metrics on training and tesst data
 #     train_metrics = evaluate(model, train_dataloader, DEVICE)
 
 #     final_train_accuracy = train_metrics["accuracy"]
@@ -331,7 +322,7 @@ if __name__ == "__main__":
 #         plot_chance_level=True,
 #     )
 
-
+        
 #         # alternatively use wandb.log({"roc": wandb.Image(plt)}
 #     wandb.log({"roc_curve": wandb.Image(fig)})
 #     plt.close(fig)  # close the plot to avoid memory leaks and overlapping figures
