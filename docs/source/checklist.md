@@ -544,7 +544,10 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 >
 > Answer:
 
-We implemented monitoring by testing for data drift using the framework Evidently. 
+We implemented monitoring by testing for data drift using the framework Evidently.
+We created a script data_drift.py that takes as "reference" the training/validation/test data and as "current" inference data named after a job-id inputted in the terminal or mock data in the absence of this.
+As the embeddings are very high dimensional, we extracted the first 20 PCs after carrying out PCA. These explained a cumulative variance of around 0.48. Furthermore, we calculated the l1 and l2 norms which tend to be constant for the ProtT5 protein embeddings, as well as their entropy. By checking for these general properties of our embeddings we can find if there is something wrong with the data people are inputting, or a software issue related to converting the input sequences into protein languague model embeddings.
+Another relevant feature we looked at was the label (betalactamase or non-betalactamase, resolved to the class level in the multi-class model), which was "ground-truth" in the case of the reference data and "predicted" for the current data. This could inform us on the specific use our model is getting and also give relvant insight on which beta-lactamse types may be bigger threats from a clinical/veterinary perspective.
 
 ## Overall discussion of project
 
@@ -627,4 +630,6 @@ We implemented monitoring by testing for data drift using the framework Evidentl
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
+Student s243312 was in charge of curating the data (more in ARGinator README.md),
 
+Generative AI tools were used in the proyect for debugging, answering conceptual doubts, generating specific commands (e.g. git-related commands) and drafting code for certain features. Tools used include ChatGPT, GitHub Copilot, and Gemini.
