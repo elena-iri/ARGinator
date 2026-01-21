@@ -555,16 +555,9 @@ Another relevant feature we looked at was the label (betalactamase or non-betala
 > **Did you implement anything extra in your project that is not covered by other questions? Maybe you implemented**
 > **a frontend for your API, use extra version control features, a drift detection service, a kubernetes cluster etc.**
 > **If yes, explain what you did and why.**
->
-> Recommended answer length: 0-200 words.
->
-> Example:
-> *We implemented a frontend for our API. We did this because we wanted to show the user ... . The frontend was*
-> *implemented using ...*
->
-> Answer:
-
---- question 28 fill here ---
+> 
+Answer:
+We implemented the frontend for user to have an easy way of processing and converting files. We implemented a file upload bucker component that would take in fasta files as inputs with the inference and classification type container starting the a job. The API also had a loading screen to track inference progress. Finally, the frontend shows the user basic data distribution with a csv file preview and export option. 
 
 ### Question 29
 
