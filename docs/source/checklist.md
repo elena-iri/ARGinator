@@ -489,25 +489,27 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 
 > **Did you manage to write an API for your model? If yes, explain how you did it and if you did anything special. If**
 > **not, explain how you would do it.**
-> Answer:
+
+Answer:
 Our API was created to handle inference of our betalactamase protein classifier model that we received from training pipeline. The API handles inference in two distinct steps. First part takes in the .fasta input file of a protein and using ProtT5 model we convert this file into h5 embeddings used for our classifier. The second model (ours) is selected based on user input and need. User can choose either binary or multiclass classification. The API returns a UMAP plot and a .csv file with class name and confidence score. The file can be downloaded and processed later by the user. 
 
---- question 23 fill here ---
 
 ### Question 24
 
 > **Did you manage to deploy your API, either in locally or cloud? If not, describe why. If yes, describe how and**
 > **preferably how you invoke your deployed service?**
-> Answer:
+
+Answer:
 We managed to deploy the API using GCP. The frontend was built using Straemlit and containerized with Docker. The backend was similarly loaded using a separate Docker image, utilizing an env.yaml file to manage and overwrite data bucket paths for GCP compatibility. 
 Using the gcloud run deploy command, we deployed our Docker images into containers, where we specifically allocated the necessary memory, CPU and GPU resources required for the protein classification tasks. Finally, the frontend.py script was updated to correctly route requests to the backend service running on GCP.
---- question 24 fill here ---
+
 
 ### Question 25
 
 > **Did you perform any unit testing and load testing of your API? If yes, explain how you did it and what results for**
 > **the load testing did you get. If not, explain how you would do it.**
-> Answer:
+
+Answer:
 For integrartion test we made sure that API is able to handle all inference steps i.e. submitting a .fasta file, converting it, dowloading the results. 
 Test checks if /submit_job can accept .fasta file select binary or multiclass model based on classification_type and create a unique job_id. 
 /status test checks if the API correctly tracks the progress of inference and if loading screen updates the values. 
@@ -528,7 +530,7 @@ Finally, the test was integrated with our GitHub actions pipeline to trigger upo
 > *We did not manage to implement monitoring. We would like to have monitoring implemented such that over time we could*
 > *measure ... and ... that would inform us about this ... behaviour of our application.*
 >
-> Answer:
+Answer:
 
 We implemented monitoring by testing for data drift using the framework Evidently.
 We created a script data_drift.py that takes as "reference" the training/validation/test data and as "current" inference data named after a job-id inputted in the terminal or mock data in the absence of this.
