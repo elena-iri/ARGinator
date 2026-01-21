@@ -1,0 +1,223 @@
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
+from fastapi.concurrency import run_in_threadpool
+import uvicorn
+import os
+import shutil
+import uuid
+import pandas as pd
+from hydra import compose, initialize
+from omegaconf import DictConfig
+from hydra.core.global_hydra import GlobalHydra
+
+# --- IMPORTS ---
+from src.arginator_protein_classifier.convertfa import load_t5_model, run_conversion
+from src.arginator_protein_classifier.inference import run_inference
+from src.arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
+
+app = FastAPI()
+
+# Global variables
+MODEL = None
+VOCAB = None
+CFG: DictConfig = None
+JOBS = {}
+
+@app.on_event("startup")
+async def startup_event():
+    global MODEL, VOCAB, CFG
+
+    # 1. Resolve Paths
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Go up from src/arginator_protein_classifier -> src -> ARGinator
+    project_root = os.path.dirname(os.path.dirname(current_dir))
+    
+    # 2. Initialize Hydra
+    # We use a relative path from this script to the configs folder
+    # ../../configs
+    if GlobalHydra.instance().is_initialized():
+        GlobalHydra.instance().clear()
+
+    with initialize(version_base=None, config_path="../../configs"):
+        CFG = compose(config_name="train_config")
+
+    
+    print("Loading T5 Model...")
+    MODEL, VOCAB = await run_in_threadpool(load_t5_model, model_dir=CFG.paths.t5_model_dir)
+    print("T5 Model loaded successfully.")
+
+def update_job_progress_scaled(job_id, current, total, start_percent, end_percent):
+    if total > 0:
+        raw_fraction = current / total
+        # Calculate how much of the "global" bar this task occupies
+        span = end_percent - start_percent
+        scaled_progress = int(start_percent + (raw_fraction * span))
+        JOBS[job_id]["progress"] = scaled_progress
+
+def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_type: str):
+    try:
+        # STEP 1: CONVERSION (0% -> 60%)
+        # We tell the callback to map the conversion progress to the 0-60 range
+        progress_callback = lambda c, t: update_job_progress_scaled(job_id, c, t, 0, 60)
+
+        print(f"[{job_id}] Starting Conversion...")
+        run_conversion(
+            seq_path=temp_fa, 
+            emb_path=saved_h5, 
+            model=MODEL, 
+            vocab=VOCAB,
+            per_protein=True,
+            callback=progress_callback
+        )
+
+        # STEP 2: INFERENCE (60% -> 80%)
+        JOBS[job_id]["progress"] = 65 # Jump to 65% to show step change
+        
+        if classification_type == 'Multiclass':
+            weights_dir = CFG.paths.multiclass_model_dir
+        else:
+            weights_dir = CFG.paths.binary_model_dir
+        
+        weights_path = os.path.join(weights_dir, "model.ckpt") 
+      
+        if not os.path.exists(weights_path):
+            raise FileNotFoundError(f"Model checkpoint not found at {weights_path}")
+
+        run_inference(
+            checkpoint_path=weights_path,
+            data_path=saved_h5,
+            output_dir=CFG.paths.data_inference_dir,
+            job_id=job_id,
+        )
+        
+        output_csv = os.path.join(CFG.paths.data_inference_dir, f"{job_id}_results.csv")
+        
+        if not os.path.exists(output_csv):
+            raise FileNotFoundError(f"Inference failed to generate output file: {output_csv}")
+
+        df = pd.read_csv(output_csv)
+        
+        # STEP 3: UMAP VISUALIZATION (80% -> 99%)
+        JOBS[job_id]["progress"] = 80 # Update progress before starting UMAP
+        
+        file_map = {
+            "card_A": CFG.paths.card_A,
+            "card_B": CFG.paths.card_B,
+            "card_C": CFG.paths.card_C,
+            "card_D": CFG.paths.card_D,
+            "query": saved_h5,
+        }
+
+        visualizer = UMAPEmbeddingVisualizer()
+        
+        # Determine output path
+        umap_output = os.path.join(CFG.paths.data_inference_dir, f"{job_id}_umap_plot.png")
+        
+        visualizer.run(
+            file_map, 
+            binary_mode=(classification_type == "Binary"), 
+            output_filename=umap_output
+        )
+
+        # STEP 4: COMPLETE (100%)
+        JOBS[job_id]["status"] = "completed"
+        JOBS[job_id]["progress"] = 100 # Finally hit 100%
+        
+        JOBS[job_id]["result"] = {
+            "classification_type": classification_type,
+            "csv_path": output_csv,
+            "preview": df.head(5).to_dict() 
+        }
+
+    except Exception as e:
+        print(f"[{job_id}] Error: {e}")
+        JOBS[job_id]["status"] = "failed"
+        JOBS[job_id]["error"] = str(e)
+    
+    finally:
+        if os.path.exists(temp_fa): 
+            os.remove(temp_fa)
+@app.post("/submit_job")
+async def submit_job(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...), 
+    classification_type: str = Form(...)
+):
+    job_id = str(uuid.uuid4())
+    
+    # Ensure inference dir exists
+    os.makedirs(CFG.paths.data_inference_dir, exist_ok=True)
+
+    temp_fa = os.path.join(CFG.paths.data_inference_dir, f"{job_id}_{file.filename}")
+    saved_h5 = os.path.join(CFG.paths.data_inference_dir, f"{job_id}.h5")
+
+    try:
+        with open(temp_fa, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File save failed: {e}")
+
+    JOBS[job_id] = {
+        "status": "processing", 
+        "progress": 0, 
+        "result": None,
+        "filename": file.filename
+    }
+
+    background_tasks.add_task(
+        process_file_task, job_id, temp_fa, saved_h5, classification_type
+    )
+
+    return {"job_id": job_id, "status": "submitted"}
+
+@app.get("/status/{job_id}")
+async def get_status(job_id: str):
+    job = JOBS.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+@app.get("/download/{job_id}")
+async def download_result(job_id: str):
+    """New endpoint to download the CSV results"""
+    job = JOBS.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job["status"] != "completed":
+        raise HTTPException(status_code=400, detail="Job not finished yet")
+
+    result = job.get("result", {})
+    csv_path = result.get("csv_path")
+
+    if not csv_path or not os.path.exists(csv_path):
+        raise HTTPException(status_code=500, detail="Result file not found on server")
+
+    return FileResponse(
+        path=csv_path, 
+        filename=f"{job_id}_results.csv", 
+        media_type='text/csv'
+    )
+
+@app.get("/download_plot/{job_id}")
+async def download_plot(job_id: str):
+    """Endpoint to retrieve the generated UMAP plot."""
+    job = JOBS.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job["status"] != "completed":
+        raise HTTPException(status_code=400, detail="Job not finished yet")
+
+    # Construct the expected path based on your process_file_task naming convention
+    plot_path = os.path.join(CFG.paths.data_inference_dir, f"{job_id}_umap_plot.png")
+
+    if not os.path.exists(plot_path):
+        # It's possible the plot failed even if the job succeeded, handle gracefully
+        raise HTTPException(status_code=404, detail="Plot file not found on server")
+
+    return FileResponse(plot_path, media_type="image/png")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
