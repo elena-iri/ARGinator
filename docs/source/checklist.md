@@ -489,14 +489,8 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 
 > **Did you manage to write an API for your model? If yes, explain how you did it and if you did anything special. If**
 > **not, explain how you would do it.**
->
-> Recommended answer length: 100-200 words.
->
-> Example:
-> *We did manage to write an API for our model. We used FastAPI to do this. We did this by ... . We also added ...*
-> *to the API to make it more ...*
->
 > Answer:
+Our API was created to handle inference of our betalactamase protein classifier model that we received from training pipeline. The API handles inference in two distinct steps. First part takes in the .fasta input file of a protein and using ProtT5 model we convert this file into h5 embeddings used for our classifier. The second model (ours) is selected based on user input and need. User can choose either binary or multiclass classification. The API returns a UMAP plot and a .csv file with class name and confidence score. The file can be downloaded and processed later by the user. 
 
 --- question 23 fill here ---
 
@@ -504,32 +498,24 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 
 > **Did you manage to deploy your API, either in locally or cloud? If not, describe why. If yes, describe how and**
 > **preferably how you invoke your deployed service?**
->
-> Recommended answer length: 100-200 words.
->
-> Example:
-> *For deployment we wrapped our model into application using ... . We first tried locally serving the model, which*
-> *worked. Afterwards we deployed it in the cloud, using ... . To invoke the service an user would call*
-> *`curl -X POST -F "file=@file.json"<weburl>`*
->
 > Answer:
-
+We managed to deploy the API using GCP. The frontend was built using Straemlit and containerized with Docker. The backend was similarly loaded using a separate Docker image, utilizing an env.yaml file to manage and overwrite data bucket paths for GCP compatibility. 
+Using the gcloud run deploy command, we deployed our Docker images into containers, where we specifically allocated the necessary memory, CPU and GPU resources required for the protein classification tasks. Finally, the frontend.py script was updated to correctly route requests to the backend service running on GCP.
 --- question 24 fill here ---
 
 ### Question 25
 
 > **Did you perform any unit testing and load testing of your API? If yes, explain how you did it and what results for**
 > **the load testing did you get. If not, explain how you would do it.**
->
-> Recommended answer length: 100-200 words.
->
-> Example:
-> *For unit testing we used ... and for load testing we used ... . The results of the load testing showed that ...*
-> *before the service crashed.*
->
 > Answer:
+For integrartion test we made sure that API is able to handle all inference steps i.e. submitting a .fasta file, converting it, dowloading the results. 
+Test checks if /submit_job can accept .fasta file select binary or multiclass model based on classification_type and create a unique job_id. 
+/status test checks if the API correctly tracks the progress of inference and if loading screen updates the values. 
+/download test was developed to ensure that the user can then download the inference results in .csv format. 
 
---- question 25 fill here ---
+For load testing we used locust framework where we laod tested the system with 100 users reaching 50 RPS without breaking the system keeping 95% percentile latency at 7ms with median latency of 4ms. This is more then enough for our API since we would not expect more than 10 users at a time to use our service. 
+Finally, the test was integrated with our GitHub actions pipeline to trigger upon API updates to our repository. 
+
 
 ### Question 26
 
