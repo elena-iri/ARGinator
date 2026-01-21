@@ -131,7 +131,7 @@ Group 16
 >
 > Example:
 >
-> *s243312, sXXXXXX, sXXXXXX*
+> *sXXXXXX, sXXXXXX, sXXXXXX*
 >
 > Answer:
 
@@ -149,7 +149,7 @@ s243312, s215141, s253510, s215145
 >
 > Answer:
 
-(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor.
+(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor. We also employed umap to generate a figure in our API when running inference. Lastly, we used the ProtT5 protein languague model from hugging face model to generate the input data (protein embeddings) for our classifier.
 
 ## Coding environment
 
@@ -544,7 +544,7 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 >
 > Answer:
 
---- question 26 fill here ---
+We implemented monitoring by testing for data drift using the framework Evidently. 
 
 ## Overall discussion of project
 
