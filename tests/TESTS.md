@@ -1,58 +1,56 @@
 # Testing Documentation
 
-This project uses `pytest` for unit and integration testing. The tests are divided into three categories: Data (PyTorch Datasets), Model Architecture (LightningModules), and Scripts (Training/Orchestration).
+This project uses `pytest` for unit and integration testing. The tests are divided into three categories: Data, Model Architecture, and Scripts (Training/Evaluation).
 
 ## 1. Data Tests (`tests/test_data.py`)
-*Tests the data ingestion pipeline, H5 file parsing, caching logic, and Stratified Splitting.*
+*Tests the data ingestion pipeline, H5 file parsing, and DataLoader construction.*
 
 | Test Function | Description |
 | :--- | :--- |
-| `test_get_dataloaders` | **Integration Test.** Uses `monkeypatch` to mock environment variables (`FILE_PATTERN`, `CLASSES`) and creates dummy `.h5` files to verify: <br> 1. `MyDataset` correctly parses files and caches them to a `.pt` file. <br> 2. The stratified split logic correctly divides data into Train/Val/Test based on ratios. <br> 3. `DataLoader` collates individual samples into batches of shape `[Batch_Size, 1024]`. <br> 4. Class balance is preserved in the training subset. |
+| `test_get_dataloaders` | **Integration Test.** Creates temporary dummy `.h5` files with specific naming conventions ("non" vs "protein") to verify that: <br> 1. The `Dataset` class parses H5 keys correctly. <br> 2. Labels are assigned correctly (0 or 1) based on filenames. <br> 3. `DataLoader` collates individual samples into batches of correct shape `[Batch_Size, 1024]`. |
 
 ## 2. Model Tests (`tests/test_model.py`)
-*Tests the `Lightning_Model` architecture, configuration injection, and gradient flow.*
+*Tests the Neural Network architecture and mathematical correctness.*
 
 | Test Function | Description |
 | :--- | :--- |
-| `test_model_forward_shape` | **Parametrized Unit Test.** Runs the `Lightning_Model` with batch sizes `[1, 32, 64]`. Verifies that input tensor `[N, 1024]` results in output `[N, Output_Dim]` without producing NaNs. |
-| `test_model_backward` | **Smoke Test.** Runs a forward pass and manually triggers `loss.backward()` to ensure the computational graph is connected and gradients are generated for parameters. |
-| `test_model_initialization` | **Unit Test.** Uses `pytest` fixtures to inject mock Hydra configs (Loss/Optimizer). Verifies the model initializes correctly with different hyperparameters (e.g., Dropout rates). |
-| `test_optimizer_configuration`| **Configuration Test.** Verifies that `configure_optimizers` successfully instantiates a valid PyTorch optimizer from the Hydra config. |
+| `test_model_forward_shape` | **Parametrized Unit Test.** Runs the model with batch sizes `[1, 32, 64]`. Verifies that input tensor `[N, 1024]` results in output `[N, 2]` without crashing or producing NaNs. |
+| `test_model_backward` | **Smoke Test.** Runs a full forward and backward pass on dummy data to ensure gradients are calculated. Catches errors like broken computational graphs or detached tensors. |
+| `test_model_dropout_initialization` | **Unit Test.** Verifies the model can be initialized with different dropout rates (0.0 vs 0.5) without error. |
 
-## 3. Script Tests (`tests/test_train.py`)
-*Tests the training orchestration, PyTorch Lightning Trainer integration, and logging. Uses extensive mocking to avoid heavy computation.*
+## 3. Script Tests (`tests/test_train.py`, `tests/test_evaluate.py`)
+*Tests the orchestration logic, CLI arguments, and file saving. These tests use Mocks to avoid running heavy computations.*
 
 | Test Function | Description |
 | :--- | :--- |
-| `test_train` | **Mocked Logic Test.** Bypasses the `@hydra.main` decorator to test the full training loop. <br> - **Mocks:** `HydraConfig`, `TL_Dataset`, `Trainer` (Lightning), `WandB`, and `WandbLogger`. <br> - **Verifies:** <br> 1. The Lightning `Trainer.fit()` is called with the correct model and data. <br> 2. The `evaluate()` loop runs successfully on mock data. <br> 3. WandB summaries are updated with test metrics. |
+| `test_train` | **Mocked Logic Test.** bypasses the `@hydra.main` decorator to test the training loop. <br> - **Mocks:** `HydraConfig`, `plt`, `get_dataloaders`. <br> - **Verifies:** The training loop runs, the model file (`.pth`) is saved to disk, and the plotting function (`plt.savefig`) is triggered. |
+| `test_evaluate` | **Mocked Logic Test.** Tests the evaluation script. <br> - **Mocks:** `Model`, `torch.load`. <br> - **Verifies:** The script loads the config, reloads weights from disk, enters `eval()` mode, and correctly calculates accuracy on the test set. |
 
 ## How to Run
-
 To run all tests:
-
-    uv run pytest tests/
+```bash
+uv run pytest tests/
+```
 
 To run a specific category (e.g., only model tests):
-
-    uv run pytest tests/test_model.py
-
+```bash
+uv run pytest tests/test_model.py
+```
 ## 4. Code Coverage Report
 *Generated via `pytest-cov`*
 
-The overall project test coverage is **68%**. Below is the detailed breakdown by module:
+The overall project test coverage is **88%**. Below is the detailed breakdown by module:
 
 | File | Statements | Missed | Coverage | Missing Lines |
 | :--- | :---: | :---: | :---: | :--- |
-| `data.py` | 171 | 72 | **58%** | 37, 47, ... , 298-329 |
-| `model.py` | 88 | 30 | **66%** | 61-62, 86-105, 108-119 |
-| `train.py` | 76 | 4 | **95%** | 109-110, 139, 174 |
+| `data.py` | 73 | 13 | **82%** | 44-45, 57-58, 101-116, 119 |
+| `evaluate.py` | 38 | 6 | **84%** | 39-43, 61 |
+| `model.py` | 28 | 4 | **86%** | 29-32 |
+| `train.py` | 55 | 1 | **98%** | 97 |
 | `__init__.py` | 0 | 0 | **100%** | - |
-| **TOTAL** | **335** | **106** | **68%** | |
+| **TOTAL** | **194** | **24** | **88%** | |
 
 ### Analysis of Missing Lines
-* **`data.py` (58%)**: The coverage is lower because `test_data.py` focuses on the **Binary** task flow.
-    * **Missing Logic:** The `multiclass` labeling logic in `_labeling` (lines 91-102) and specific error handling branches (e.g., file read errors) are not triggered.
-    * **Hydra Entry Point:** The `main()` function and CLI entry block (lines 298-334) are not executed by the unit tests.
-* **`model.py` (66%)**:
-    * **Lightning Methods:** The tests check `forward` and `backward`, but they do not execute `training_step` (86-105) or `validation_step` (108-119). These methods are usually called by the Lightning Trainer, which we mocked in `test_train.py`. To increase this, we would need to manually call `model.training_step()` in a unit test.
-* **`train.py` (95%)**: High coverage. The few missing lines correspond to specific `multiclass` ROC plotting branches (since the test used binary data) or specific fallback logic for dataloaders.
+* **`data.py` (82%)**: The missing lines likely correspond to the main execution block (`if __name__ == "__main__":`) or specific error handling branches (e.g., `except Exception as e`) that were not triggered during the integration test.
+* **`evaluate.py` (84%)**: The missing block (lines 39-43) is the `FileNotFoundError` handling logic, which we did not explicitly trigger in the success-case test.
+* **`model.py` (86%)**: The missing lines (29-32) are likely the `if __name__ == "__main__":` block or debug print statements.

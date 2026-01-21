@@ -1,60 +1,6 @@
 outs:
-- hash: md5
+- md5: 6f412a80d1cf277fd6fc95d7a2d8446f.dir
+  size: 1040852885
+  nfiles: 8
+  hash: md5
   path: .data
-  files:
-  - relpath: card_class_a_embeddings.h5
-    md5: fad414b13ebdec4300bde33e6e38e869
-    size: 6722816
-    cloud:
-      storage:
-        etag: 08d5c4ecd5c19292031001
-        version_id: '1768650801095253'
-  - relpath: card_class_b_embeddings.h5
-    md5: 275e4c27d7a2f885b8d00d702fb2db7c
-    size: 2295312
-    cloud:
-      storage:
-        etag: 08cbf4a4d5c19292031001
-        version_id: '1768650799921739'
-  - relpath: card_class_c_embeddings.h5
-    md5: b07ff85d34ec0c0fe2b42cb55d8d8e3a
-    size: 6851840
-    cloud:
-      storage:
-        etag: 08e1edafd9c19292031001
-        version_id: '1768650808489697'
-  - relpath: card_class_d_embeddings.h5
-    md5: cfd72a7c4d3bec49bccb5e6bed6ad393
-    size: 5705504
-    cloud:
-      storage:
-        etag: 08cfe6e2d9c19292031001
-        version_id: '1768650809324367'
-  - relpath: labelled_as_betalactamase_embeddings.h5
-    md5: 9adb0103e4290e242cc045e2fc083a27
-    size: 100383634
-    cloud:
-      storage:
-        etag: 08c3968edcc19292031001
-        version_id: '1768650814229315'
-  - relpath: non_betalactamase_embeddings_60k.h5
-    md5: 033b20d36e722095372fe4cfa48cf7f1
-    size: 379215368
-    cloud:
-      storage:
-        etag: 08a5f5e98ac29292031001
-        version_id: '1768650912201381'
-  - relpath: processed_data.pt
-    md5: 557678400fe9bca856a95b6e656e26d3
-    size: 353407232
-    cloud:
-      storage:
-        etag: 08e49083d5c19292031001
-        version_id: '1768650799368292'
-  - relpath: uniprot_metadata_selected.tsv
-    md5: 43d3e2b531bef96df10d18cd5e132e35
-    size: 186271179
-    cloud:
-      storage:
-        etag: 08db94ace6c19292031001
-        version_id: '1768650835692123'
