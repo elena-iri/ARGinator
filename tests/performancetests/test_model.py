@@ -13,6 +13,19 @@ print(os.listdir())
 # 3. Import DIRECTLY from the package (do NOT use src.arginator...)
 from arginator_protein_classifier.inference import run_inference
 from arginator_protein_classifier.model import Lightning_Model
+from arginator_protein_classifier.train import get_secret
+
+# Fetch key and set it as Env Var so WandB finds it automatically
+try:
+    # Only fetch if not already set (allows local runs to still work)
+    if "WANDB_API_KEY" not in os.environ:
+        print("Fetching WandB key from Secret Manager...")
+        api_key = get_secret("arginator", "WANDB_API_KEY")
+        os.environ["WANDB_API_KEY"] = api_key.strip() # .strip() removes accidental newlines
+        wandb.login(key=api_key.strip())
+        
+except Exception as e:
+    print(f"Could not fetch secret: {e}")
 
 load_dotenv()
 log = logging.getLogger(__name__)
