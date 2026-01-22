@@ -88,16 +88,40 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
 
         # STEP 2: INFERENCE (60% -> 80%)
         JOBS[job_id]["progress"] = 65 # Jump to 65% to show step change
-        
+
         if classification_type == 'Multiclass':
-            weights_dir = CFG.paths.multiclass_model_dir
+            # Assuming cfg.task.name was "multiclass" during training
+            model_collection_name = "arginator_registry/multiclass_models" 
         else:
-            weights_dir = CFG.paths.binary_model_dir
-        
-        weights_path = os.path.join(weights_dir, "model.ckpt") 
-      
-        if not os.path.exists(weights_path):
-            raise FileNotFoundError(f"Model checkpoint not found at {weights_path}")
+            # Assuming cfg.task.name was "binary" during training
+            model_collection_name = "arginator_registry/binary_models"
+
+        # 2. Download the latest artifact from the registry
+        try:
+            print(f"Downloading latest model from: {model_collection_name}...")
+            
+            # Initialize API (make sure you are logged in or env var WANDB_API_KEY is set)
+            api = wandb.Api()
+            
+            # Fetch the artifact. 'latest' is the alias for the most recent version.
+            artifact = api.artifact(f"{model_collection_name}:latest", type="model")
+            
+            # Download to the specific directory your config expects
+            download_dir = artifact.download(root=weights_dir)
+            
+            # WandB often preserves the filename you saved it with (e.g., "best-checkpoint.ckpt")
+            # You might need to find the .ckpt file if the name isn't fixed to "model.ckpt"
+            downloaded_files = [f for f in os.listdir(download_dir) if f.endswith(".ckpt")]
+            
+            if not downloaded_files:
+                raise FileNotFoundError("No .ckpt file found in the downloaded artifact.")
+                
+            # Use the downloaded file
+            weights_path = os.path.join(download_dir, downloaded_files[0])
+            print(f"Model downloaded to: {weights_path}")
+
+        except wandb.errors.CommError as e:
+            raise RuntimeError(f"Failed to access WandB registry. Check your API key and permissions. Error: {e}")
 
         run_inference(
             checkpoint_path=weights_path,
