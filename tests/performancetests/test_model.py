@@ -15,33 +15,22 @@ from arginator_protein_classifier.inference import run_inference
 from arginator_protein_classifier.model import Lightning_Model
 from arginator_protein_classifier.train import get_secret
 
-# Fetch key and set it as Env Var so WandB finds it automatically
-try:
-    # Only fetch if not already set (allows local runs to still work)
-    if "WANDB_API_KEY" not in os.environ:
-        print("Fetching WandB key from Secret Manager...")
-        api_key = get_secret("arginator", "WANDB_API_KEY")
-        os.environ["WANDB_API_KEY"] = api_key.strip() # .strip() removes accidental newlines
-        wandb.login(key=api_key.strip())
-        
-except Exception as e:
-    print(f"Could not fetch secret: {e}")
-
 load_dotenv()
 log = logging.getLogger(__name__)
 
 
 def download_model_from_wandb(artifact_path: str, download_dir: str = None) -> str:
-    """
-    Download a model checkpoint from Weights & Biases.
+    # 1. Get Key
+    api_key = os.getenv("WANDB_API_KEY")
     
-    Args:
-        artifact_path: W&B artifact path in format "entity/project/artifact_name:version"
-        download_dir: Directory to download to. Defaults to temp directory.
+    # 2. Debugging (Masked)
+    if not api_key:
+        log.error("CRITICAL: WANDB_API_KEY is missing or empty in the environment.")
+        raise ValueError("WANDB_API_KEY is not set. Check your GitHub Secrets.")
     
-    Returns:
-        Path to the downloaded checkpoint file.
-    """
+    print(f"DEBUG: Found WANDB_API_KEY with length: {len(api_key)}")
+
+    # 3. Initialize API explicitly
     if download_dir is None:
         download_dir = Path("/tmp/wandb_artifacts")
     else:
@@ -50,12 +39,13 @@ def download_model_from_wandb(artifact_path: str, download_dir: str = None) -> s
     download_dir.mkdir(parents=True, exist_ok=True)
     
     try:
-        api = wandb.Api(api_key=os.getenv("WANDB_API_KEY"))
+        # Pass key explicitly to ensure it's used
+        api = wandb.Api(api_key=api_key)
+        
         log.info(f"Downloading artifact from wandb: {artifact_path}")
         artifact = api.artifact(artifact_path)
         artifact_dir = artifact.download(root=str(download_dir))
         
-        # Find the .ckpt file in the downloaded directory
         ckpt_files = list(Path(artifact_dir).glob("*.ckpt"))
         if not ckpt_files:
             raise FileNotFoundError(f"No .ckpt files found in {artifact_dir}")
