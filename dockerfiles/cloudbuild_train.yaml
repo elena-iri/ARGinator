@@ -1,0 +1,21 @@
+steps:
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    env: ['DOCKER_BUILDKIT=1']
+    args: [
+      'build',
+      '.',                                   # Build context (root)
+      '-t', '$_IMAGE_URI',                   # Tag (using a variable)
+      '-f', 'dockerfiles/train_gcp.dockerfile'         # <--- Points to your specific file
+    ]
+
+  # # Docker Push
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   args: ['push', '$_IMAGE_URI']
+
+# Variable substitution so you can reuse this file
+substitutions:
+  _IMAGE_URI: 'europe-west1-docker.pkg.dev/arginator/arginator-registry/protein-classifier:latest'
+
+images:
+  - '$_IMAGE_URI'

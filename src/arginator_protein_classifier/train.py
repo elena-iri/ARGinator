@@ -16,6 +16,31 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from arginator_protein_classifier.model import Lightning_Model
 from arginator_protein_classifier.data import TL_Dataset
 from sklearn.metrics import RocCurveDisplay, accuracy_score, f1_score, precision_score, recall_score
+
+import wandb
+from arginator_protein_classifier.data import TL_Dataset
+from arginator_protein_classifier.model import Lightning_Model
+
+from google.cloud import secretmanager
+
+def get_secret(project_id, secret_id, version_id="latest"):
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+# Fetch key and set it as Env Var so WandB finds it automatically
+try:
+    # Only fetch if not already set (allows local runs to still work)
+    if "WANDB_API_KEY" not in os.environ:
+        print("Fetching WandB key from Secret Manager...")
+        api_key = get_secret("arginator", "WANDB_API_KEY")
+        os.environ["WANDB_API_KEY"] = api_key.strip() # .strip() removes accidental newlines
+        wandb.login(key=api_key.strip())
+        
+except Exception as e:
+    print(f"Could not fetch secret: {e}")
+
 # from arginator_protein_classifier.model import Model
 # from arginator_protein_classifier.data import get_dataloaders
 
@@ -59,13 +84,16 @@ def train(cfg: DictConfig) -> None:
     # )    
     log.info("Training Day and Night")
 
-    data = TL_Dataset(data_path=cfg.paths.data,
-                      task = cfg.task.name,
-                      batch_size = cfg.experiment.batch_size,
-                      split_ratios = cfg.experiment.splits,
-                      seed = cfg.processing.seed,
-                      output_folder = cfg.paths.data
-                      )
+    root_data_folder = os.path.join(project_root, ".data")
+
+    data = TL_Dataset(
+        data_path=cfg.paths.data,
+        task=cfg.task.name,
+        batch_size=cfg.experiment.batch_size,
+        split_ratios=cfg.experiment.splits,
+        seed=cfg.processing.seed,
+        output_folder=cfg.paths.data,
+    )
 
     model = Lightning_Model(input_dim=1024, 
                             output_dim = cfg.task.output_dim,
@@ -117,7 +145,9 @@ def train(cfg: DictConfig) -> None:
     final_test_recall = test_metrics["recall"]
     final_test_f1 = test_metrics["f1"]
 
-    log.info(f"Final Test Metrics: Accuracy: {final_test_accuracy:.4f}, Precision: {final_test_precision:.4f}, Recall: {final_test_recall:.4f}, F1: {final_test_f1:.4f}")
+    log.info(
+        f"Final Test Metrics: Accuracy: {final_test_accuracy:.4f}, Precision: {final_test_precision:.4f}, Recall: {final_test_recall:.4f}, F1: {final_test_f1:.4f}"
+    )
 
     # Update WandB Summary
     wandb.summary["test_accuracy"] = final_test_accuracy

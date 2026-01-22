@@ -239,7 +239,7 @@ class TL_Dataset(pl.LightningDataModule):
 
     def setup(self, stage=None):
         """does the split and replaces get_dataloaders"""
-        full_dataset = MyDataset(self.data_path, task=self.task)
+        full_dataset = MyDataset(self.data_path, output_folder = self.output_path, task=self.task)
         labels = full_dataset.get_labels()
         
         # Split indices (using your logic)
@@ -307,10 +307,11 @@ def main(cfg: DictConfig):
     # Show the task we are going for when building datasets
     log.info(f"Selected task configuration: {task}")
     # Ensure folder exists
+    root_data_path = Path(project_root)/".data"
     log.info(f"Processing data from {data_path} (task={task})...")
-    data_path.mkdir(parents=True, exist_ok=True) 
+    root_data_path.mkdir(parents=True, exist_ok=True)
     # Initialize dataset
-    dataset = TL_Dataset(data_path, task, batch_size, split_ratios, seed, data_path)
+    dataset = TL_Dataset(data_path, task, batch_size, split_ratios, seed, root_data_path)
     log.info(f"Processing data from {data_path} (task={task})...")
     dataset.setup()
     log.info(f"Created General Dataset. Dataset is of type{type(dataset)}")

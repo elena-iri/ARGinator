@@ -1,0 +1,22 @@
+serviceAccount: 71687606529-compute@developer.gserviceaccount.com
+
+workerPoolSpecs:
+  - machineSpec:
+      machineType: n1-standard-4
+    replicaCount: 1
+    containerSpec:
+      imageUri: europe-west1-docker.pkg.dev/arginator/arginator-registry/protein-classifier:latest
+      env:
+        - name: CLASSES
+          value: "a,b,c,d,non"
+          
+        - name: FILE_PATTERN
+          value: "card_class_{}_embeddings.h5"
+          
+        - name: WANDB_ENTITY
+          value: "eleni-iriondo2-danmarks-tekniske-universitet-dtu"
+          
+        - name: WANDB_PROJECT
+          value: "arginator_protein_classifier"
+      args:
+        - "paths.data=/gcs/arginator_data/.data"

@@ -15,8 +15,9 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-install-proj
 #These commands use the cache to speed up installation of dependencies
 
 COPY src/ src/
+COPY configs/ configs/
 COPY README.md README.md
-COPY .data/ .data/
+COPY .env .env
 
 RUN uv sync --locked --no-cache --no-install-project
 
