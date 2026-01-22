@@ -11,8 +11,8 @@ import wandb
 print(os.listdir())
 
 # 3. Import DIRECTLY from the package (do NOT use src.arginator...)
-from arginator_protein_classifier.inference import run_inference
-from arginator_protein_classifier.model import Lightning_Model
+from src.arginator_protein_classifier.inference import run_inference
+from src.arginator_protein_classifier.model import Lightning_Model
 
 load_dotenv()
 log = logging.getLogger(__name__)
