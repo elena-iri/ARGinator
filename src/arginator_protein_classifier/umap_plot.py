@@ -2,8 +2,10 @@ import h5py
 import numpy as np
 import pandas as pd
 import umap
-import matplotlib.pyplot as plt
 import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 matplotlib.use("Agg")
 class UMAPEmbeddingVisualizer:
