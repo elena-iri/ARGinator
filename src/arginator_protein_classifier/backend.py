@@ -10,17 +10,31 @@ from hydra import compose, initialize
 from omegaconf import DictConfig
 from hydra.core.global_hydra import GlobalHydra
 from contextlib import asynccontextmanager
+import wandb
 
 # --- IMPORTS ---
 from src.arginator_protein_classifier.convertfa import load_t5_model, run_conversion
 from src.arginator_protein_classifier.inference import run_inference
 from src.arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
+from src.arginator_protein_classifier.train import get_secret
 
 # Global variables
 MODEL = None
 VOCAB = None
 CFG: DictConfig = None
 JOBS = {}
+
+# Fetch key and set it as Env Var so WandB finds it automatically
+try:
+    # Only fetch if not already set (allows local runs to still work)
+    if "WANDB_API_KEY" not in os.environ:
+        print("Fetching WandB key from Secret Manager...")
+        api_key = get_secret("arginator", "WANDB_API_KEY")
+        os.environ["WANDB_API_KEY"] = api_key.strip() # .strip() removes accidental newlines
+        wandb.login(key=api_key.strip())
+        
+except Exception as e:
+    print(f"Could not fetch secret: {e}")
 
 # --- NEW LIFESPAN WAY ---
 @asynccontextmanager
@@ -89,16 +103,23 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
         # STEP 2: INFERENCE (60% -> 80%)
         JOBS[job_id]["progress"] = 65 # Jump to 65% to show step change
 
-        if classification_type == 'Multiclass':
-            # Assuming cfg.task.name was "multiclass" during training
-            model_collection_name = "arginator_registry/multiclass_models" 
-        else:
-            # Assuming cfg.task.name was "binary" during training
-            model_collection_name = "arginator_registry/binary_models"
+        ENTITY = "eleni-iriondo2-danmarks-tekniske-universitet-dtu-org"
+        PROJECT = "wandb-registry-arginator_models"
 
-        # 2. Download the latest artifact from the registry
+        if classification_type == 'Multiclass':
+            # Format: entity/project/collection
+            model_collection_name = f"{ENTITY}/{PROJECT}/multiclass_models"
+        else:
+            model_collection_name = f"{ENTITY}/{PROJECT}/binary_models"
+
+        # 2. Download the latest artifact
         try:
             print(f"Downloading latest model from: {model_collection_name}...")
+            
+            api = wandb.Api()
+            
+            # Pass the full path here
+            artifact = api.artifact(f"{model_collection_name}:latest", type="model")
             
             # Initialize API (make sure you are logged in or env var WANDB_API_KEY is set)
             api = wandb.Api()
@@ -107,7 +128,7 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
             artifact = api.artifact(f"{model_collection_name}:latest", type="model")
             
             # Download to the specific directory your config expects
-            download_dir = artifact.download(root=weights_dir)
+            download_dir = artifact.download(root=".models")
             
             # WandB often preserves the filename you saved it with (e.g., "best-checkpoint.ckpt")
             # You might need to find the .ckpt file if the name isn't fixed to "model.ckpt"
