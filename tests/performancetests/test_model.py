@@ -8,15 +8,9 @@ import pytest
 from dotenv import load_dotenv
 import wandb
 
-# Add the src directory to the path
-src_path = Path(__file__).parent.parent.parent / "src"
-
-# 2. Add it to sys.path
-sys.path.insert(0, str(src_path))
-
 # 3. Import DIRECTLY from the package (do NOT use src.arginator...)
-from arginator_protein_classifier.inference import run_inference
-from arginator_protein_classifier.model import Lightning_Model
+from src.arginator_protein_classifier.inference import run_inference
+from src.arginator_protein_classifier.model import Lightning_Model
 
 load_dotenv()
 log = logging.getLogger(__name__)
