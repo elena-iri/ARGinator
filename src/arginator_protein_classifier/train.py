@@ -148,8 +148,27 @@ def train(cfg: DictConfig) -> None:
     log.info(
         f"Final Test Metrics: Accuracy: {final_test_accuracy:.4f}, Precision: {final_test_precision:.4f}, Recall: {final_test_recall:.4f}, F1: {final_test_f1:.4f}"
     )
+    best_model_path = checkpoint_callback.best_model_path
 
-    # Update WandB Summary
+    if best_model_path:
+        # 2. Create an artifact for the registry
+        artifact = wandb.Artifact(
+            name="arginator_production_model", # The name in the registry
+            type="model",
+            description="Best model from training run",
+            metadata=test_metrics # Optional: attach metrics to the artifact
+        )
+        
+        # 3. Add the file and log it
+        artifact.add_file(best_model_path)
+        wandb.log_artifact(artifact)
+        
+        # 4. Link it to the Registered Model collection
+        # Replace 'my-registry' with your desired registry name
+        wandb.run.link_artifact(artifact, f"wandb-registry-arginator_models/{cfg.task.name}_models")
+        
+        log.info(f"Best model linked to registry: arginator_registry")
+    #WandB Summary
     wandb.summary["test_accuracy"] = final_test_accuracy
     wandb.summary["test_f1"] = final_test_f1
 
