@@ -101,8 +101,8 @@ will check the repositories and the code to verify your answers.
 * [✅] Check how robust your model is towards data drifting (M27) Elena
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
-* [ ] Setup cloud monitoring of your instrumented application (M28)
-* [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+* [✅] Setup cloud monitoring of your instrumented application (M28)
+* [✅] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
 * [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
@@ -121,7 +121,8 @@ will check the repositories and the code to verify your answers.
 ### Question 1
 > **Enter the group number you signed up on <learn.inside.dtu.dk>**
 >
-> Answer:
+
+Answer:
 
 Group 16
 
@@ -132,7 +133,8 @@ Group 16
 >
 > *sXXXXXX, sXXXXXX, sXXXXXX*
 >
-> Answer:
+
+Answer:
 
 s243312, s215141, s253510, s215145
 
@@ -146,7 +148,8 @@ s243312, s215141, s253510, s215145
 > *We used the third-party framework ... in our project. We used functionality ... and functionality ... from the*
 > *package to do ... and ... in our project*.
 >
-> Answer:
+
+Answer:
 
 (It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor. We also employed umap to generate a figure in our API when running inference. Lastly, we used the ProtT5 protein languague model from hugging face model to generate the input data (protein embeddings) for our classifier.
 
@@ -166,7 +169,8 @@ s243312, s215141, s253510, s215145
 > *We used ... for managing our dependencies. The list of dependencies was auto-generated using ... . To get a*
 > *complete copy of our development environment, one would have to run the following commands*
 >
-> Answer:
+
+Answer:
 
 We used uv for managing our dependencies and the Python environment. Our direct list of dependencies was auto-generated using uv and are declared in the `pyproject.toml` file, while `uv` generates and maintains the cross-platform `uv.lock` file. To get a complete copy of our development environment, first clone this repo, next run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`. We also implemented DVC to manage large files so to pull the most up to date data run `uv run dvc pull`.
 
@@ -182,7 +186,8 @@ We used uv for managing our dependencies and the Python environment. Our direct 
 > *because we did not use any ... in our project. We have added an ... folder that contains ... for running our*
 > *experiments.*
 >
-> Answer:
+
+Answer:
 
 We closely followed the structure of the cookiecutter template. We filled out the configs, dockerfiles, tests and src folders. We have added a folder for outputs and for wandb logging (the latter is .gitignored) and removed the reports folder as this was redundant for us. 
 
@@ -197,7 +202,8 @@ We closely followed the structure of the cookiecutter template. We filled out th
 > *We used ... for linting and ... for formatting. We also used ... for typing and ... for documentation. These*
 > *concepts are important in larger projects because ... . For example, typing ...*
 >
-> Answer:
+
+Answer:
 
 We used the ruff libary for code linting and formatting. We also used Typer for adding the CLI commands (to e.g. `uv run train` instead of `uv run train.py`). These concepts are important in larger projects to ensure that code is clean and consistent making it possible for all team members to easily follow what is going on in the code, which is especially useful for the case that they want to continue the work on something.
 
@@ -216,7 +222,8 @@ We used the ruff libary for code linting and formatting. We also used Typer for 
 > *In total we have implemented X tests. Primarily we are testing ... and ... as these the most critical parts of our*
 > *application but also ... .*
 >
-> Answer:
+
+Answer:
 
 In total we implemented 4 tests. We are primarily testing the train, evaluate, data processing and api scripts as those are the most critical in our application. The tests and code coverage are documented in the `TESTS.md` file in the tests folder.
 
@@ -231,7 +238,8 @@ In total we implemented 4 tests. We are primarily testing the train, evaluate, d
 > *The total code coverage of code is X%, which includes all our source code. We are far from 100% coverage of our **
 > *code and even if we were then...*
 >
-> Answer:
+
+Answer:
 
 *Generated via `pytest-cov`*
 
@@ -264,7 +272,8 @@ The overall project test coverage is **68%**. Below is the detailed breakdown by
 > *We made use of both branches and PRs in our project. In our group, each member had an branch that they worked on in*
 > *addition to the main branch. To merge code we ...*
 >
-> Answer:
+
+Answer:
 
 Yes, we made use of both branches and PRs in our project. For each new feature (checklist item) that we implemented we would create a new branch e.g. `unit_tests`, `data-version-control`, `gcp_cloud` and then merge these, via pull requests, into a `development` branch. If we were then happy with a version of the code and everything seemed to be working properly we would merge this `development` branch into `main` (also via PR). For the Pull Requests we tried to always wait for at least one other group member to have a look and review before merging the branches. This setup allowed for revisiting certain features when they no longer worked with the current code due to other conflicting features. An example of this would be the `unit_tests` which we had to update after we changed certain parts of our data processing and training code with torch-lightning.
 
@@ -279,7 +288,8 @@ Yes, we made use of both branches and PRs in our project. For each new feature (
 > *We did make use of DVC in the following way: ... . In the end it helped us in ... for controlling ... part of our*
 > *pipeline*
 >
-> Answer:
+
+Answer:
 
 Yes, DVC was heavily utilized with GCP in our project as our remote backend to manage the large protein embedding files.
 
@@ -298,7 +308,8 @@ It improved our project primarily by decoupling the code from the data while mai
 > *and one for running ... . In particular for our ..., we used ... .An example of a triggered workflow can be seen*
 > *here: <weblink>*
 >
-> Answer:
+
+Answer:
 
 We organized our Continuous Integration (CI) into four workflows to efficiently handle different parts of the pipeline:
 
@@ -325,9 +336,9 @@ An example of our testing workflow can be seen here: [https://github.com/elena-i
 > Example:
 > *We used a simple argparser, that worked in the following way: Python  my_script.py --lr 1e-3 --batch_size 25*
 >
-> Answer:
 
-We used separate config files for experiment, optimizer, paths, processing and the task (binary/multiclass), based on which task was then specified in the `train_config.yaml` the corresponding `output_dim` would be loaded from the task config folder. We used Hydra for keeping config log files of the experiment, this slightly changed the default double hyphen structure from typer to use a full stop for custom specifications e.g. `uv run train experiment.lr=1e-2`.
+Answer:
+We used separate config files for experiment, optimizer, paths, processing and the task (binary/multiclass), based on which task was then specified in the `train_config.yaml` the corresponding `output_dim` would be loaded from the task config folder. We used Hydra for keeping config log files of the experiment, this slightly changed the default double hyphen structure from typer to use a full stop for custom specifications e.g. `uv run train experiment.lr=1e-2`. For running inference on gcp, apart from mounting the path to the bucket when deploying the backend we had to add some hydra overrides to bypass the paths config using an `env.yaml file`.
 
 ### Question 13
 
@@ -340,8 +351,8 @@ We used separate config files for experiment, optimizer, paths, processing and t
 > *We made use of config files. Whenever an experiment is run the following happens: ... . To reproduce an experiment*
 > *one would have to do ...*
 >
-> Answer:
 
+Answer:
 We ensured reproducibility by tightly coupling the code, data, and configuration using a combination of Hydra, WandB, and DVC.
 We used Hydra to manage complex, hierarchical configurations, ensuring that all hyperparameters are defined explicitly in code rather than hardcoded. whenever an experiment is run, the following happens:
 
@@ -364,8 +375,8 @@ To reproduce a past experiment, one would simply have to checkout the specific g
 > *As seen in the first image when have tracked ... and ... which both inform us about ... in our experiments.*
 > *As seen in the second image we are also tracking ... and ...*
 >
-> Answer:
 
+Answer:
 <img width="773" height="650" alt="image" src="https://github.com/user-attachments/assets/3b816abb-eb8b-496b-b765-cb28e79200b6" />
 
 As seen in the above image we are tracking the basic training metrics such as the loss, recall and precision during a training run that inform us whether or not the model is improving over epochs.
@@ -389,9 +400,9 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 > *For our project we developed several images: one for training, inference and deployment. For example to run the*
 > *training docker image: `docker run trainer:latest lr=1e-3 batch_size=64`. Link to docker file: <weblink>*
 >
-> Answer:
 
---- question 15 fill here ---
+Answer:
+For our project we developed 3 docker images: one for training, one for the backend of inference and one for the fronend of inference. To then run inference on GCP Cloud Run we would upload and build the backend and frontend images and then deploy them. To run training on GCP through Vertex AI we would upload and build the training dockerfile. As an example to run the training docker image: `docker run train:latest experiment.lr=1e-3 experiment.dropout_rate=0.3`. Link to the docker file: https://github.com/elena-iri/ARGinator/blob/main/dockerfiles/train.dockerfile 
 
 ### Question 16
 
@@ -421,9 +432,13 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 > Example:
 > *We used the following two services: Engine and Bucket. Engine is used for... and Bucket is used for...*
 >
-> Answer:
 
---- question 17 fill here ---
+Answer:
+We used the following services:
+- **Cloud Storage** buckets to store the training data, the models (both the ones we trained for binary and multiclass classification and the pretrained model we used to conver from fasta .fa gene files to .h5 protein embeddings) and the results of inference (including a results.csv, the converted .h5 and a UMAP plot).
+- **Vertex AI** for training the model on the cloud.
+- **Cloud Run** for running and hosting the inference backend and frontend.
+- **Artifact Registry** for storing the built docker images.
 
 ### Question 18
 
@@ -445,9 +460,11 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 > **Insert 1-2 images of your GCP bucket, such that we can see what data you have stored in it.**
 > **You can take inspiration from [this figure](figures/bucket.png).**
 >
-> Answer:
 
---- question 19 fill here ---
+Answer:
+
+<img width="596" height="380" alt="image" src="https://github.com/user-attachments/assets/900db368-4813-40b6-847c-fad9bab4d27c" />
+
 
 ### Question 20
 
@@ -478,9 +495,9 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 > *We managed to train our model in the cloud using the Engine. We did this by ... . The reason we choose the Engine*
 > *was because ...*
 >
-> Answer:
 
---- question 22 fill here ---
+Answer:
+Yes we managed to train our model in the cloud on Vertex AI, there was not too much reasoning into choosing it over the compute engine but since our model training was relatively fast we thought it would be cleaner to just have training be started and ended automatically through vertex, rather than first initialising the VM and then running something on it. We created a `config_vertex.yaml` file to pass when runnning the custom job, that points to the image uri and has the worker specs that we needed.
 
 ## Deployment
 
