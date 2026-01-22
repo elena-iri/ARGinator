@@ -8,6 +8,8 @@ import pytest
 from dotenv import load_dotenv
 import wandb
 
+print(os.listdir())
+
 # 3. Import DIRECTLY from the package (do NOT use src.arginator...)
 from arginator_protein_classifier.inference import run_inference
 from arginator_protein_classifier.model import Lightning_Model
