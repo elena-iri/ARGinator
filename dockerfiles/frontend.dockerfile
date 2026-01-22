@@ -16,7 +16,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project
 
 # Copy Source
-COPY src/arginator_protein_classifier/frontend.py src/arginator_protein_classifier/frontend.py
+COPY src src
+# COPY src/arginator_protein_classifier/frontend.py src/arginator_protein_classifier/frontend.py
 COPY README.md README.md
 # Streamlit typically doesn't need 'configs/' unless your code reads them explicitly
 
