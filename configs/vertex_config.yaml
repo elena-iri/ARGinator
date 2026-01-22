@@ -1,4 +1,3 @@
-# 👇 Add this line!
 serviceAccount: 71687606529-compute@developer.gserviceaccount.com
 
 workerPoolSpecs:

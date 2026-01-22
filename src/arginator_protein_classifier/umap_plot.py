@@ -6,8 +6,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-
-matplotlib.use("Agg")
 class UMAPEmbeddingVisualizer:
     """Visualize protein embeddings using UMAP dimensionality reduction."""
     
