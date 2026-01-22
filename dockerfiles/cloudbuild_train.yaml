@@ -9,9 +9,9 @@ steps:
       '-f', 'dockerfiles/train_gcp.dockerfile'         # <--- Points to your specific file
     ]
 
-  # Docker Push
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '$_IMAGE_URI']
+  # # Docker Push
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   args: ['push', '$_IMAGE_URI']
 
 # Variable substitution so you can reuse this file
 substitutions:
