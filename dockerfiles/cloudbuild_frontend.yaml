@@ -1,0 +1,11 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '.',
+      '-t', 'europe-west1-docker.pkg.dev/arginator/arginator-registry/streamlit-frontend:latest',
+      '-f', 'dockerfiles/frontend.dockerfile'
+    ]
+    env: ['DOCKER_BUILDKIT=1'] # Speeds up the build
+images:
+  - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/streamlit-frontend:latest'

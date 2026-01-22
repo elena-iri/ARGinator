@@ -4,6 +4,8 @@ import h5py
 from transformers import T5EncoderModel, T5Tokenizer
 import os
 
+from huggingface_hub import hf_hub_download
+
 # Check device once on import
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(f"Convert.py using device: {device}")
@@ -12,11 +14,17 @@ def load_t5_model(model_dir=None, transformer_link="Rostlab/prot_t5_xl_half_unir
     """
     Loads the heavy model into memory. Call this ONLY ONCE in the backend startup.
     """
-    print(f"Loading model: {transformer_link}")
+    # Force strings immediately
+    transformer_link = str(transformer_link)
+    if model_dir:
+        model_dir = str(model_dir)
+
+    print(f"DEBUG: Loading model from: {transformer_link}")
     
+    # 1. Load the Model
     model = T5EncoderModel.from_pretrained(transformer_link, cache_dir=model_dir)
     
-    # Cast to full precision if on CPU, otherwise half precision is usually fine for GPU inference
+    # Cast to full precision if on CPU
     if device.type == "cpu":
         print("Casting model to full precision for CPU...")
         model.to(torch.float32)
@@ -24,8 +32,26 @@ def load_t5_model(model_dir=None, transformer_link="Rostlab/prot_t5_xl_half_unir
     model = model.to(device)
     model = model.eval()
     
-    vocab = T5Tokenizer.from_pretrained(transformer_link, do_lower_case=False)
-    
+    # 2. Load the Tokenizer (The "Manual" Way)
+    print("DEBUG: Resolving tokenizer file manually...")
+    try:
+        # Explicitly download/find the spiece.model file
+        # This returns the absolute path as a string, bypassing the bug
+        vocab_path = hf_hub_download(
+            repo_id=transformer_link, 
+            filename="spiece.model", 
+            cache_dir=model_dir
+        )
+        print(f"DEBUG: Vocab file resolved to: {vocab_path}")
+        
+        # Load tokenizer using the direct file path
+        vocab = T5Tokenizer.from_pretrained(str(vocab_path), do_lower_case=False, legacy=True)
+        
+    except Exception as e:
+        print(f"CRITICAL ERROR loading tokenizer: {e}")
+        # If manual download fails, fallback to standard (unlikely to work if above failed, but good safety)
+        vocab = T5Tokenizer.from_pretrained(transformer_link, do_lower_case=False, legacy=True)
+
     return model, vocab
 
 def read_fasta(fasta_path):

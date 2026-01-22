@@ -22,7 +22,6 @@ VOCAB = None
 CFG: DictConfig = None
 JOBS = {}
 
-
 # --- NEW LIFESPAN WAY ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,16 +29,23 @@ async def lifespan(app: FastAPI):
     global MODEL, VOCAB, CFG
     
     print("Initializing Hydra...")
-    # Resolve Paths
+        # 1. Resolve Paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(os.path.dirname(current_dir)) # Up to root
+    project_root = os.path.dirname(os.path.dirname(current_dir))
     
+    # 2. Initialize Hydra
     if GlobalHydra.instance().is_initialized():
         GlobalHydra.instance().clear()
 
-    # Note: Adjust config_path if needed to match your exact folder structure
+    # Example: "paths.data=/gcs/bucket;paths.model_dir=/gcs/bucket/models"
+    overrides_str = os.environ.get("HYDRA_OVERRIDES", "")
+    overrides = [o.strip() for o in overrides_str.split(";")] if overrides_str else []
+
     with initialize(version_base=None, config_path="../../configs"):
-        CFG = compose(config_name="train_config")
+        # Pass the overrides here
+        CFG = compose(config_name="train_config", overrides=overrides)
+
+    print(f"Loaded Config with overrides: {overrides}")
 
     print("Loading T5 Model...")
     MODEL, VOCAB = await run_in_threadpool(load_t5_model, model_dir=CFG.paths.t5_model_dir)
