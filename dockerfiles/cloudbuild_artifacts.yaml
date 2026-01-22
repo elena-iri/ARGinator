@@ -49,3 +49,6 @@ images:
   - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/fastapi-backend:latest'
   - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/streamlit-frontend:latest'
   - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/protein-classifier:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
