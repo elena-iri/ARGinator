@@ -30,9 +30,14 @@ steps:
   # ==============================================================================
   # 3. TRAINING MODEL (From cloudbuild_train.yaml)
   # ==============================================================================
+  - name: 'ubuntu'  # Use a lightweight image just for sed
+    id: 'prep-train-env'
+    waitFor: ['-']
+    args: ['bash', '-c', 'sed "s/: /=/" env.yaml > .env']
+
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-train'
-    waitFor: ['-']  # Start immediately (Parallel)
+    waitFor: ['prep-train-env']  # Start immediately (Parallel)
     env: ['DOCKER_BUILDKIT=1']
     args: [
       'build',
