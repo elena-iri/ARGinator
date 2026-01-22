@@ -146,6 +146,7 @@ config_path = os.path.join(project_root, "configs")
 
 
 @hydra.main(version_base=None, config_path=config_path, config_name="train_config")
+
 def main(cfg: DictConfig) -> None:
     x = torch.rand(1, 1024)
     print(x.shape[1])

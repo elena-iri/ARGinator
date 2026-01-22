@@ -81,25 +81,25 @@ will check the repositories and the code to verify your answers.
 * [✅] Write unit tests related to the data part of your code (M16) - MAX
 * [✅] Write unit tests related to model construction and or model training (M16) - MAX
 * [✅] Calculate the code coverage (M16) - MAX
-* [✅] Get some continuous integration running on the GitHub repository (M17) Max **UPDATE UNIT TEST**
-* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max **UPDATE UNIT TEST**
+* [✅] Get some continuous integration running on the GitHub repository (M17) Max
+* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max
 * [✅] Add a linting step to your continuous integration (M17) Elena 
 * [✅] Add pre-commit hooks to your version control setup (M18) Elena 
-* [ ] Add a continues workflow that triggers when data changes (M19) Free 
-* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Free 
+* [✅] Add a continues workflow that triggers when data changes (M19) Free 
+* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Elena 
 * [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
 * [ ] Create a trigger workflow for automatically building your docker images (M21) Claudio 
 * [ ] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
-* [ ] Create a FastAPI application that can do inference using your model (M22) Toms
-* [ ] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
-* [ ] Write API tests for your application and setup continues integration for these (M24) Toms 
-* [ ] Load test your application (M24) - MAX 
+* [✅] Create a FastAPI application that can do inference using your model (M22) Toms
+* [] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
+* [✅] Write API tests for your application and setup continues integration for these (M24) Toms 
+* [✅] Load test your application (M24) - Toms 
 * [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25) **optional** 
-* [ ] Create a frontend for your API (M26) Toms
+* [✅] Create a frontend for your API (M26) Toms
 
 ### Week 3
 
-* [ ] Check how robust your model is towards data drifting (M27)
+* [ ] Check how robust your model is towards data drifting (M27) Elena
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
@@ -135,7 +135,7 @@ Group 16
 >
 > Answer:
 
-s243312, s, s, s
+s243312, s215141, s253510, s215145
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -149,7 +149,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 3 fill here ---
+(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor.
 
 ## Coding environment
 
@@ -169,7 +169,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 4 fill here ---
+We used uv for managing our dependencies and the Python environment. Our direct list of dependencies was auto-generated using uv and are declared in the `pyproject.toml` file, while `uv` generates and maintains the cross-platform `uv.lock` file. To get a complete copy of our development environment, first clone this repo, next run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`. We also implemented DVC to manage large files so to pull the most up to date data run `uv run dvc pull`.
 
 ### Question 5
 
@@ -185,7 +185,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 5 fill here ---
+We closely followed the structure of the cookiecutter template. We filled out the configs, dockerfiles, tests and src folders. We have added a folder for outputs and for wandb logging (the latter is .gitignored) and removed the reports folder as this was redundant for us. 
 
 ### Question 6
 
@@ -200,7 +200,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 6 fill here ---
+We used the ruff libary for code linting and formatting. We also used Typer for adding the CLI commands (to e.g. `uv run train` instead of `uv run train.py`). These concepts are important in larger projects to ensure that code is clean and consistent making it possible for all team members to easily follow what is going on in the code, which is especially useful for the case that they want to continue the work on something.
 
 ## Version control
 
@@ -219,7 +219,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 7 fill here ---
+In total we implemented 4 tests. We are primarily testing the train, evaluate, data processing and api scripts as those are the most critical in our application. The tests and code coverage are documented in the `TESTS.md` file in the tests folder.
 
 ### Question 8
 
@@ -234,7 +234,25 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 8 fill here ---
+*Generated via `pytest-cov`*
+
+The overall project test coverage is **68%**. Below is the detailed breakdown by module:
+
+| File | Statements | Missed | Coverage | Missing Lines |
+| :--- | :---: | :---: | :---: | :--- |
+| `data.py` | 171 | 72 | **58%** | 37, 47, ... , 298-329 |
+| `model.py` | 88 | 30 | **66%** | 61-62, 86-105, 108-119 |
+| `train.py` | 76 | 4 | **95%** | 109-110, 139, 174 |
+| `__init__.py` | 0 | 0 | **100%** | - |
+| **TOTAL** | **335** | **106** | **68%** | |
+
+*Analysis of Missing Lines*
+* **`data.py` (58%)**: The coverage is lower because `test_data.py` focuses on the **Binary** task flow.
+    * **Missing Logic:** The `multiclass` labeling logic in `_labeling` (lines 91-102) and specific error handling branches (e.g., file read errors) are not triggered.
+    * **Hydra Entry Point:** The `main()` function and CLI entry block (lines 298-334) are not executed by the unit tests.
+* **`model.py` (66%)**:
+    * **Lightning Methods:** The tests check `forward` and `backward`, but they do not execute `training_step` (86-105) or `validation_step` (108-119). These methods are usually called by the Lightning Trainer, which we mocked in `test_train.py`. To increase this, we would need to manually call `model.training_step()` in a unit test.
+* **`train.py` (95%)**: High coverage. The few missing lines correspond to specific `multiclass` ROC plotting branches (since the test used binary data) or specific fallback logic for dataloaders.
 
 ### Question 9
 
@@ -249,7 +267,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 9 fill here ---
+Yes, we made use of both branches and PRs in our project. For each new feature (checklist item) that we implemented we would create a new branch e.g. `unit_tests`, `data-version-control`, `gcp_cloud` and then merge these, via pull requests, into a `development` branch. If we were then happy with a version of the code and everything seemed to be working properly we would merge this `development` branch into `main` (also via PR). For the Pull Requests we tried to always wait for at least one other group member to have a look and review before merging the branches. This setup allowed for revisiting certain features when they no longer worked with the current code due to other conflicting features. An example of this would be the `unit_tests` which we had to update after we changed certain parts of our data processing and training code with torch-lightning.
 
 ### Question 10
 
@@ -264,7 +282,9 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 10 fill here ---
+Yes, DVC was heavily utilized with GCP in our project as our remote backend to manage the large protein embedding files.
+
+It improved our project primarily by decoupling the code from the data while maintaining a strict link between them. Instead of bloating the Git repository with gigabytes of .h5 files, we instead committed small .dvc pointer files. This ensured that every commit in our history referenced the exact version of the dataset used at that time, making experiments fully reproducible. If a model performance dropped, we could checkout the previous Git commit and run `uv run dvc pull` to instantly revert the data state to match with the code.
 
 ### Question 11
 
@@ -281,7 +301,15 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 11 fill here ---
+We organized our Continuous Integration (CI) into four workflows to efficiently handle different parts of the pipeline:
+
+1. Code Quality & Linting: We use two workflows, `Code linting` and `Pre-commit CI`. These run ruff to enforce coding standards and formatting. The pre-commit workflow is particularly robust; it can automatically fix minor style issues and push those changes back to the branch, reducing manual interventions.
+2. Unit Testing: Our `Unit Tests` workflow is designed for maximum compatibility. We utilize a build matrix strategy to test our code across three operating systems: Ubuntu, Windows, and macOS, two Python versions: 3.11, 3.12, and two different PyTorch versions: 2.4.0, 2.5.1. This ensures that the package is robust and platform-agnostic.
+3. Data Integrity: Uniquely, we implement a DVC Workflow that triggers specifically on changes to .dvc files. It pulls the data from Google Cloud Storage, runs a custom validation script, and uses CML to post a visual data quality report as a comment directly to the Pull Requests.
+
+We make extensive use of caching for optimizing runtime. Across all workflows, we use astral-sh/setup-uv with enable-cache: true to cache our Python dependencies. Additionally, in the data workflow, we explicitly cache the .dvc/cache directory, which significantly speeds up the downloading of large protein embedding files from the cloud.
+
+An example of our testing workflow can be seen here: [https://github.com/elena-iri/ARGinator/actions/runs/21096186032]
 
 ## Running code and tracking experiments
 
@@ -300,7 +328,7 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 12 fill here ---
+We used separate config files for experiment, optimizer, paths, processing and the task (binary/multiclass), based on which task was then specified in the `train_config.yaml` the corresponding `output_dim` would be loaded from the task config folder. We used Hydra for keeping config log files of the experiment, this slightly changed the default double hyphen structure from typer to use a full stop for custom specifications e.g. `uv run train experiment.lr=1e-2`.
 
 ### Question 13
 
@@ -315,7 +343,14 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 13 fill here ---
+We ensured reproducibility by tightly coupling the code, data, and configuration using a combination of Hydra, WandB, and DVC.
+We used Hydra to manage complex, hierarchical configurations, ensuring that all hyperparameters are defined explicitly in code rather than hardcoded. whenever an experiment is run, the following happens:
+
+- WandB automatically captures the fully resolved Hydra configuration (config.yaml), ensuring we know the exact parameters used, even if command-line overrides were applied.
+- It logs the Git commit hash, which locks the version of the code.
+- Because we are using DVC, that specific Git commit also points to the exact version of the dataset used during training.
+
+To reproduce a past experiment, one would simply have to checkout the specific git commit logged in WandB (restoring both code and DVC data pointers) and execute the training script using the saved config file from the WandB dashboard. This guarantees that the exact code, data and parameters are reproduced.
 
 ### Question 14
 
@@ -332,7 +367,17 @@ s243312, s, s, s
 >
 > Answer:
 
---- question 14 fill here ---
+<img width="773" height="650" alt="image" src="https://github.com/user-attachments/assets/3b816abb-eb8b-496b-b765-cb28e79200b6" />
+
+As seen in the above image we are tracking the basic training metrics such as the loss, recall and precision during a training run that inform us whether or not the model is improving over epochs.
+
+<img width="640" height="480" alt="media_images_roc_curve_10_d2d2d0cc80e2366999c7" src="https://github.com/user-attachments/assets/a37a2ecd-3d25-4851-84ce-70eec32fa365" />
+
+We also create and store Receiver Operating Characteristic (ROC) curves using matplotlib at the end of training and upload these as a .png to WandB, to understand if the model is just randomly guessing or making reasonable classifications. 
+
+<img width="874" height="586" alt="image" src="https://github.com/user-attachments/assets/806fa7e1-29de-49fc-8023-71c656f4fa13" />
+
+We also created a hyperparameter sweep to see which hyperparameters most significantly affect the validation loss, we saw that the most drastic differences are seen only when the batch size is lowered but that other parameters (in the ranges we tested) did not effect the loss to as large an extent.
 
 ### Question 15
 
