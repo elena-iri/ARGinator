@@ -1,0 +1,51 @@
+steps:
+  # ==============================================================================
+  # 1. API BACKEND (From cloudbuild_api.yaml)
+  # ==============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-api'
+    waitFor: ['-']  # Start immediately
+    env: ['DOCKER_BUILDKIT=1']
+    args: [
+      'build',
+      '.',
+      '-t', 'europe-west1-docker.pkg.dev/arginator/arginator-registry/fastapi-backend:latest',
+      '-f', 'dockerfiles/api.dockerfile'
+    ]
+
+  # ==============================================================================
+  # 2. FRONTEND (From cloudbuild_frontend.yaml)
+  # ==============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend'
+    waitFor: ['-']  # Start immediately (Parallel)
+    env: ['DOCKER_BUILDKIT=1']
+    args: [
+      'build',
+      '.',
+      '-t', 'europe-west1-docker.pkg.dev/arginator/arginator-registry/streamlit-frontend:latest',
+      '-f', 'dockerfiles/frontend.dockerfile'
+    ]
+
+  # ==============================================================================
+  # 3. TRAINING MODEL (From cloudbuild_train.yaml)
+  # ==============================================================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-train'
+    waitFor: ['-']  # Start immediately (Parallel)
+    env: ['DOCKER_BUILDKIT=1']
+    args: [
+      'build',
+      '.',
+      '-t', 'europe-west1-docker.pkg.dev/arginator/arginator-registry/protein-classifier:latest',
+      '-f', 'dockerfiles/train_gcp.dockerfile'
+    ]
+
+# ==============================================================================
+# GLOBAL PUSH
+# ==============================================================================
+# Cloud Build automatically pushes these images after all steps succeed.
+images:
+  - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/fastapi-backend:latest'
+  - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/streamlit-frontend:latest'
+  - 'europe-west1-docker.pkg.dev/arginator/arginator-registry/protein-classifier:latest'
