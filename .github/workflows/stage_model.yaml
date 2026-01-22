@@ -27,25 +27,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Use the official uv action (Matches your linting workflow)
+      # Setup uv with the correct python version
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'  # Must match project.requires-python
           enable-cache: true
 
-      # 2. Install dependencies using the lockfile
-      # This replaces the manual 'uv pip install' commands
       - name: Install dependencies
-        run: |
-          uv sync --locked
-          
-      # 3. Run the test using 'uv run'
+        run: uv sync --locked
+
       - name: Run Performance Test
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
           WANDB_ARTIFACT: ${{ needs.identify_event.outputs.model_name }}
           PYTHONPATH: ${{ github.workspace }}/src
         run: |
-          # 'uv run' automatically uses the environment created by 'uv sync'
           uv run pytest tests/performancetests/test_model.py -k "speed or shape" -v
