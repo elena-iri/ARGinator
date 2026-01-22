@@ -27,11 +27,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Setup uv with the correct python version
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'  # Must match project.requires-python
+          python-version: '3.11'
           enable-cache: true
 
       - name: Install dependencies
@@ -43,4 +42,11 @@ jobs:
           WANDB_ARTIFACT: ${{ needs.identify_event.outputs.model_name }}
           PYTHONPATH: ${{ github.workspace }}/src
         run: |
-          uv run pytest tests/performancetests/test_model.py -k "speed or shape" -v
+          # Debugging: Print the artifact name to ensure it was passed correctly
+          echo "DEBUG: WANDB_ARTIFACT is '$WANDB_ARTIFACT'"
+          
+          # Run pytest with:
+          # -v : Verbose
+          # -r s : Show the 'reason' for skipped tests
+          # -s : Show stdout/print statements (crucial for debugging)
+          uv run pytest tests/performancetests/test_model.py -k "speed or shape" -v -rs -s
