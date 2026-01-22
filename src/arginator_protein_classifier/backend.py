@@ -9,13 +9,12 @@ import pandas as pd
 from hydra import compose, initialize
 from omegaconf import DictConfig
 from hydra.core.global_hydra import GlobalHydra
+from contextlib import asynccontextmanager
 
 # --- IMPORTS ---
 from src.arginator_protein_classifier.convertfa import load_t5_model, run_conversion
 from src.arginator_protein_classifier.inference import run_inference
 from src.arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
-
-app = FastAPI()
 
 # Global variables
 MODEL = None
@@ -23,11 +22,14 @@ VOCAB = None
 CFG: DictConfig = None
 JOBS = {}
 
-@app.on_event("startup")
-async def startup_event():
+# --- NEW LIFESPAN WAY ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1. Startup Logic (Runs before app starts)
     global MODEL, VOCAB, CFG
-
-    # 1. Resolve Paths
+    
+    print("Initializing Hydra...")
+        # 1. Resolve Paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(current_dir))
     
@@ -44,10 +46,21 @@ async def startup_event():
         CFG = compose(config_name="train_config", overrides=overrides)
 
     print(f"Loaded Config with overrides: {overrides}")
-    
+
     print("Loading T5 Model...")
     MODEL, VOCAB = await run_in_threadpool(load_t5_model, model_dir=CFG.paths.t5_model_dir)
-    print("T5 Model loaded successfully.")
+    print("Startup Complete.")
+    
+    yield  # Hand over control to the application
+    
+    # 2. Shutdown Logic (Runs when app stops)
+    # If you had any DB connections or pools to close, you would do it here.
+    print("Shutting down...")
+    if GlobalHydra.instance().is_initialized():
+        GlobalHydra.instance().clear()
+
+# Pass lifespan into the app creation
+app = FastAPI(lifespan=lifespan)
 
 def update_job_progress_scaled(job_id, current, total, start_percent, end_percent):
     if total > 0:
@@ -100,7 +113,7 @@ def process_file_task(job_id: str, temp_fa: str, saved_h5: str, classification_t
 
         df = pd.read_csv(output_csv)
         
-        # STEP 3: UMAP VISUALIZATION (80% -> 99%)
+      
         JOBS[job_id]["progress"] = 80 # Update progress before starting UMAP
         
         file_map = {
