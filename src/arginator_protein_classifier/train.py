@@ -17,6 +17,26 @@ import wandb
 from arginator_protein_classifier.data import TL_Dataset
 from arginator_protein_classifier.model import Lightning_Model
 
+from google.cloud import secretmanager
+
+def get_secret(project_id, secret_id, version_id="latest"):
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+# Fetch key and set it as Env Var so WandB finds it automatically
+try:
+    # Only fetch if not already set (allows local runs to still work)
+    if "WANDB_API_KEY" not in os.environ:
+        print("Fetching WandB key from Secret Manager...")
+        api_key = get_secret("arginator", "WANDB_API_KEY")
+        os.environ["WANDB_API_KEY"] = api_key.strip() # .strip() removes accidental newlines
+        wandb.login(key=api_key.strip())
+        
+except Exception as e:
+    print(f"Could not fetch secret: {e}")
+
 # from arginator_protein_classifier.model import Model
 # from arginator_protein_classifier.data import get_dataloaders
 # 1. Setup Logger
@@ -62,13 +82,15 @@ def train(cfg: DictConfig) -> None:
     # )
     log.info("Training Day and Night")
 
+    root_data_folder = os.path.join(project_root, ".data")
+
     data = TL_Dataset(
         data_path=cfg.paths.data,
         task=cfg.task.name,
         batch_size=cfg.experiment.batch_size,
         split_ratios=cfg.experiment.splits,
         seed=cfg.processing.seed,
-        output_folder=cfg.paths.data,
+        output_folder=root_data_folder,
     )
 
     model = Lightning_Model(
@@ -126,8 +148,27 @@ def train(cfg: DictConfig) -> None:
     log.info(
         f"Final Test Metrics: Accuracy: {final_test_accuracy:.4f}, Precision: {final_test_precision:.4f}, Recall: {final_test_recall:.4f}, F1: {final_test_f1:.4f}"
     )
+    best_model_path = checkpoint_callback.best_model_path
 
-    # Update WandB Summary
+    if best_model_path:
+        # 2. Create an artifact for the registry
+        artifact = wandb.Artifact(
+            name="arginator_production_model", # The name in the registry
+            type="model",
+            description="Best model from training run",
+            metadata=test_metrics # Optional: attach metrics to the artifact
+        )
+        
+        # 3. Add the file and log it
+        artifact.add_file(best_model_path)
+        wandb.log_artifact(artifact)
+        
+        # 4. Link it to the Registered Model collection
+        # Replace 'my-registry' with your desired registry name
+        wandb.run.link_artifact(artifact, f"wandb-registry-arginator_models/{cfg.task.name}_models")
+        
+        log.info(f"Best model linked to registry: arginator_registry")
+    #WandB Summary
     wandb.summary["test_accuracy"] = final_test_accuracy
     wandb.summary["test_f1"] = final_test_f1
 
