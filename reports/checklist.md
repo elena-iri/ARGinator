@@ -616,7 +616,10 @@ We implemented the frontend for user to have an easy way of processing and conve
 >
 > Answer:
 
---- question 29 fill here ---
+![architecture_fig](https://github.com/user-attachments/assets/5019db83-3486-41f7-a871-cbabff31185f)
+
+
+In the center of our diagram we have the local setup of the ARGinator project. The repository structure was made using Cookiecutter, whilst uv was used as package manager. Most of the code is based on PyTorch, also implementing the PyTorch Lightning framework. Hydra and Weights and Biases were used for configurations, experiment logging and as artifact registry. For code version control and collaboration, Git and GitHub were employed. GitHub Actions were used for continuous integration and automatization of certain steps such as testing whenever merging to the development or main branches. On the other hand, DVC was used for data version control and storage. Docker was used to build containers for encapsulation of code and dependencies. The cloud had a huge role in the project. We used the Google Cloud Platform, which includes countless functionalities. Specifically, we used it for storage (Cloud Bucket), for image building (Cloud Build), for deployment (Cloud Run), for training (Vertex AI) and for versioning (Artifact Registry). A REST API was also deployed from the cloud to make our model accessible to an end user (possibly an epidemiologist without much coding knowledge). This API included added functionalities such as running a Hugging Face LLM to convert typical sequence files (FASTA files) into embedding files which can be inputted into our model.
 
 ### Question 30
 
