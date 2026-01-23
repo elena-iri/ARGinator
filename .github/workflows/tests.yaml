@@ -56,5 +56,4 @@ jobs:
         shell: bash
         run: |
           uv run pytest --cov=src --cov-report=term-missing tests/ \
-            --ignore=tests/performancetests \
-            --ignore=tests/integrationtests
+            --ignore=tests/performancetests
