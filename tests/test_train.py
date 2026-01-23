@@ -1,33 +1,57 @@
 import pytest
-from unittest.mock import patch, MagicMock
-from omegaconf import OmegaConf
 import torch
 import os
+from unittest.mock import patch, MagicMock
+from omegaconf import OmegaConf
 
 # Import the train function
 from arginator_protein_classifier.train import train
 
-@patch("arginator_protein_classifier.train.HydraConfig")  # 1. Mock Hydra's runtime config
-@patch("arginator_protein_classifier.train.get_dataloaders")  # 2. Mock data loading
-@patch("arginator_protein_classifier.train.plt")  # 3. Mock plotting (so no windows open)
-def test_train(mock_plt, mock_get_dataloaders, mock_hydra_config, tmp_path):
+@patch("arginator_protein_classifier.train.ModelCheckpoint")     # 9. NEW: Mock Checkpoint Callback
+@patch("arginator_protein_classifier.train.wandb")               # 8. Mock global wandb module
+@patch("arginator_protein_classifier.train.plt")                 # 7. Mock Plotting
+@patch("arginator_protein_classifier.train.evaluate")            # 6. Mock Evaluate helper
+@patch("arginator_protein_classifier.train.Lightning_Model")     # 5. Mock Model Class
+@patch("arginator_protein_classifier.train.Trainer")             # 4. Mock Lightning Trainer
+@patch("arginator_protein_classifier.train.WandbLogger")         # 3. Mock WandB Logger
+@patch("arginator_protein_classifier.train.TL_Dataset")          # 2. Mock DataModule
+@patch("arginator_protein_classifier.train.HydraConfig")         # 1. Mock Hydra
+def test_train_flow(
+    mock_hydra, 
+    mock_dataset_cls, 
+    mock_wandb_logger_cls, 
+    mock_trainer_cls, 
+    mock_model_cls, 
+    mock_evaluate, 
+    mock_plt, 
+    mock_wandb_module,
+    mock_checkpoint_cls,  # <--- Capture the new mock here
+    tmp_path
+):
     """
-    Tests the training loop by bypassing the @hydra.main decorator 
-    and mocking the data/environment.
+    Tests the training function logic by mocking all external dependencies.
     """
-    
-    # 1: Create a Dummy Config
-    # We mimic the structure of your config.yaml
+
+    # 1. Setup Dummy Config
     cfg = OmegaConf.create({
         "experiment": {
             "seed": 42,
             "dropout_rate": 0.1,
             "batch_size": 2,
-            "epochs": 1,  # Run just 1 epoch for speed
-            "lr": 0.001
+            "epochs": 1,
+            "splits": [0.8, 0.1, 0.1],
+            "loss_function": "torch.nn.CrossEntropyLoss"
+        },
+        "task": {
+            "name": "binary",
+            "output_dim": 2
+        },
+        "optimizer": {
+             "_target_": "torch.optim.Adam",
+             "lr": 0.001
         },
         "paths": {
-            "data": "dummy/path",
+            "data": str(tmp_path / "dummy_data"),
             "model_filename": "model.pth"
         },
         "processing": {
@@ -35,46 +59,56 @@ def test_train(mock_plt, mock_get_dataloaders, mock_hydra_config, tmp_path):
         }
     })
 
-    # 2: Mock the Hydra Runtime Output Directory
-    # When code calls HydraConfig.get().runtime.output_dir, return our temp folder
-    mock_hydra_config.get.return_value.runtime.output_dir = str(tmp_path)
-
-    # 3: Mock the Data
-    # Create fake tensors that match Model input (1024 dim)
-    # Batch size 2, input dim 1024
-    fake_img = torch.randn(2, 1024) 
-    fake_target = torch.randint(0, 2, (2,)) # Binary targets (0 or 1)
+    # 2. Setup Mocks
+    mock_hydra.get.return_value.runtime.output_dir = str(tmp_path)
     
-    # Create a mock dataloader that yields one batch and then stops
-    mock_loader = MagicMock()
-    mock_loader.__iter__.return_value = [(fake_img, fake_target)]
-    mock_loader.__len__.return_value = 1
-    
-    # get_dataloaders returns (train, val, test). We only need train for this script.
-    mock_get_dataloaders.return_value = (mock_loader, mock_loader, mock_loader)
-
+    # Configure plt.subplots
     mock_fig = MagicMock()
-    mock_axs = MagicMock()
-    mock_plt.subplots.return_value = (mock_fig, mock_axs)
-
-    # 4: Run the Function
-    # IMPORTANT: Use .__wrapped__ to bypass the @hydra.main decorator!
-    train.__wrapped__(cfg)
-
-    # 5: Assertions
+    mock_ax = MagicMock()
+    mock_ax.plot.return_value = [MagicMock()] # Return list for unpacking
+    mock_plt.subplots.return_value = (mock_fig, mock_ax)
     
-    # A. Check if the model file was actually created
-    expected_model_path = tmp_path / "model.pth"
-    assert expected_model_path.exists(), "Model file was not saved!"
+    # Mock DataModule
+    mock_dm_instance = mock_dataset_cls.return_value
+    mock_dm_instance.test_dataloader.return_value = [("input", "target")]
+    
+    # Mock Trainer & Model
+    mock_trainer_instance = mock_trainer_cls.return_value
+    mock_model_instance = mock_model_cls.return_value
 
-    # B. Check if the plot logic was triggered
-    # Since 'fig' is a mock, it won't write a real file. 
-    # Instead, we verify that .savefig() was called exactly once.
-    expected_plot_path = tmp_path / "training_statistics.png"
+    # --- FIX: Ensure ModelCheckpoint provides a path ---
+    # This ensures 'if best_model_path:' evaluates to True
+    mock_checkpoint_cls.return_value.best_model_path = "dummy/path/best.ckpt"
+
+    # Mock Evaluate return values
+    mock_evaluate.return_value = {
+        "accuracy": 0.95,
+        "precision": 0.90,
+        "recall": 0.85,
+        "f1": 0.88,
+        "logits": torch.tensor([[0.1, 0.9], [0.9, 0.1]]), 
+        "targets": torch.tensor([1, 0])           
+    }
     
-    # Check that savefig was called
-    assert mock_fig.savefig.called, "Plot savefig was never called!"
+    # Mock Global WandB Object
+    mock_wandb_module.summary = {} 
+    mock_wandb_module.run = MagicMock()
+
+    # 3. Execution
+    with patch.dict(os.environ, {
+        "WANDB_API_KEY": "dummy_key", 
+        "WANDB_ENTITY": "dummy_entity", 
+        "WANDB_PROJECT": "dummy_project"
+    }):
+        train.__wrapped__(cfg)
+
+    # 4. Assertions
+    mock_dataset_cls.assert_called_once()
+    mock_trainer_cls.assert_called_once()
+    mock_trainer_instance.fit.assert_called_once_with(mock_model_instance, mock_dm_instance)
     
-    # Verify it was called with the correct path
-    args, _ = mock_fig.savefig.call_args
-    assert str(expected_plot_path) in str(args[0]), f"Plot saved to wrong path: {args[0]}"
+    # Check that plotting was triggered
+    mock_plt.subplots.assert_called_once()
+    
+    # Check that artifact logging was attempted
+    assert mock_wandb_module.log_artifact.called or mock_wandb_module.run.link_artifact.called
