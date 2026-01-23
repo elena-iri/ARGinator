@@ -151,7 +151,7 @@ s243312, s215141, s253510, s215145
 
 Answer:
 
-(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor. We also employed umap to generate a figure in our API when running inference. Lastly, we used the ProtT5 protein languague model from hugging face model to generate the input data (protein embeddings) for our classifier.
+(It was covered by the course but) we used the Pytorch-Lightning framework to reduce boilerplate ML code in our codebase. Several external packages were used to deal with the specific data type we handled. A python package that we used outside of the course was the h5py library to process .h5 protein embedding files into a torch tensor. We also employed umap to generate a figure in our API when running inference, as this powerful dimensionality reduction technique is often used with biological data to get an understanding of the structure and behaviour of the data. Lastly, we used the ProtT5 protein language model from hugging face model to generate the input data (protein embeddings) for our classifier, using protein sequences files (fasta format).
 
 ## Coding environment
 
@@ -172,7 +172,7 @@ Answer:
 
 Answer:
 
-We used uv for managing our dependencies and the Python environment. Our direct list of dependencies was auto-generated using uv and are declared in the `pyproject.toml` file, while `uv` generates and maintains the cross-platform `uv.lock` file. To get a complete copy of our development environment, first clone this repo, next run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`. We also implemented DVC to manage large files so to pull the most up to date data run `uv run dvc pull`.
+We used uv for managing our dependencies and the Python environment. Our direct list of dependencies was auto-generated using uv and are declared in the `pyproject.toml` file, while `uv` generates and maintains the cross-platform `uv.lock` file. To get a complete copy of our development environment, first clone this repo, next run the command `uv sync`, and subsequently run the different scripts in the src folder with `uv run script.py`. This would not only download all relevant dependencies but alos generate the correct directory structure. We also implemented DVC to manage large files so to pull the most up to date data run `uv run dvc pull`.
 
 ### Question 5
 
@@ -189,7 +189,7 @@ We used uv for managing our dependencies and the Python environment. Our direct 
 
 Answer:
 
-We closely followed the structure of the cookiecutter template. We filled out the configs, dockerfiles, tests and src folders. We have added a folder for outputs and for wandb logging (the latter is .gitignored) and removed the reports folder as this was redundant for us. 
+We closely followed the structure of the cookiecutter mlops template provided in the course. We filled out the configs, dockerfiles, tests and src folders. Specifically, our src folder consistis of the scripts: api.py, data.py, inference.py, train.py, backend.py, data_validation.py, __init__.py, umap_plot.py, convertfa.py, example_monitoring_api.py, model.py, visualize.py, data_drift.py and frontend.py. We have added a folder for outputs and for wandb logging (the latter is .gitignored), as well as sub folders for integration and performance tests inside of the tests directory, and for different configurations inside configs. Lastly, we got rid of the folder models, as these can be found in our outputs folder.
 
 ### Question 6
 
@@ -205,7 +205,7 @@ We closely followed the structure of the cookiecutter template. We filled out th
 
 Answer:
 
-We used the ruff libary for code linting and formatting. We also used Typer for adding the CLI commands (to e.g. `uv run train` instead of `uv run train.py`). These concepts are important in larger projects to ensure that code is clean and consistent making it possible for all team members to easily follow what is going on in the code, which is especially useful for the case that they want to continue the work on something.
+We used the ruff libary for code linting and formatting. We also used Typer for adding the CLI commands (to e.g. `uv run train` instead of `uv run train.py`). These concepts are important in larger projects to ensure that code is clean and consistent making it possible for all team members to easily follow what is going on in the code, which is especially useful for the case that they want to continue the work on something. Additionally, making code accessible and readable can help our end users that have not taken part in designing the code. In this way, they could easily understand specific steps or tweak parts for their convenience.
 
 ## Version control
 
