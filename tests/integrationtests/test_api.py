@@ -53,8 +53,6 @@ def test_full_job_workflow(mock_env):
          patch(f"{MODULE_PATH}.run_conversion") as mock_convert, \
          patch(f"{MODULE_PATH}.run_inference") as mock_inference, \
          patch(f"{MODULE_PATH}.UMAPEmbeddingVisualizer") as mock_umap_cls:
-
-        # ... (Rest of the test logic remains the same) ...
         
         # Mock side effects
         def side_effect_inference(checkpoint_path, data_path, output_dir, job_id):

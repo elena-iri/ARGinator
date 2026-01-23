@@ -53,6 +53,7 @@ jobs:
             -e ".[dev]"
 
       - name: Run tests & coverage
+        shell: bash
         run: |
           uv run pytest --cov=src --cov-report=term-missing tests/ \
             --ignore=tests/performancetests \
