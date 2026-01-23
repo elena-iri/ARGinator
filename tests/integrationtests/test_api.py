@@ -6,7 +6,8 @@ from unittest.mock import patch, MagicMock, mock_open
 import pandas as pd
 
 # --- IMPORT APP ---
-from src.arginator_protein_classifier.backend import app, JOBS, process_file_task
+# Notice we import from the package name, not 'src'
+from arginator_protein_classifier.backend import app, JOBS, process_file_task
 
 # --- FIXTURES ---
 
@@ -33,9 +34,10 @@ def mock_startup(mock_config):
     Automatically mocks the 'lifespan' startup logic.
     This prevents loading the real T5 model or Hydra when creating the TestClient.
     """
-    with patch("src.arginator_protein_classifier.backend.load_t5_model") as mock_load, \
-         patch("src.arginator_protein_classifier.backend.initialize"), \
-         patch("src.arginator_protein_classifier.backend.compose", return_value=mock_config):
+    # --- FIX: Removed 'src.' from patch paths ---
+    with patch("arginator_protein_classifier.backend.load_t5_model") as mock_load, \
+         patch("arginator_protein_classifier.backend.initialize"), \
+         patch("arginator_protein_classifier.backend.compose", return_value=mock_config):
         
         # Mock Model and Vocab
         mock_load.return_value = ("MockT5Model", "MockVocab")
@@ -62,7 +64,6 @@ def test_submit_job_endpoint(client, tmp_path):
         data = {"classification_type": "Binary"}
 
         # We mock the background task addition so the heavy logic doesn't actually run
-        # We will test the logic separately in `test_process_file_task_logic`
         with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
             response = client.post("/submit_job", files=files, data=data)
 
@@ -97,18 +98,19 @@ def test_get_status_not_found(client):
 
 # --- LOGIC TESTS (The Background Task) ---
 
-@patch("src.arginator_protein_classifier.backend.run_conversion")
-@patch("src.arginator_protein_classifier.backend.run_inference")
-@patch("src.arginator_protein_classifier.backend.UMAPEmbeddingVisualizer")
-@patch("os.remove")          # <--- NEW: Mock os.remove
+# --- FIX: Removed 'src.' from patch paths ---
+@patch("arginator_protein_classifier.backend.run_conversion")
+@patch("arginator_protein_classifier.backend.run_inference")
+@patch("arginator_protein_classifier.backend.UMAPEmbeddingVisualizer")
+@patch("os.remove")
 @patch("os.path.exists")
 @patch("pandas.read_csv")
-@patch("src.arginator_protein_classifier.backend.CFG")
+@patch("arginator_protein_classifier.backend.CFG")
 def test_process_file_task_success(
     mock_cfg, 
     mock_pd_read, 
     mock_exists, 
-    mock_remove,             # <--- Add to arguments
+    mock_remove, 
     mock_umap_cls, 
     mock_inf, 
     mock_conv, 
@@ -141,7 +143,6 @@ def test_process_file_task_success(
     assert JOBS[job_id]["progress"] == 100
     
     # 2. Verify Cleanup was attempted
-    # This proves the finally block ran without crashing
     mock_remove.assert_called_once_with("temp.fa")
 
 def test_process_file_task_failure():
@@ -160,13 +161,10 @@ def test_process_file_task_failure():
 def test_download_endpoints(client, tmp_path):
     """
     Test downloading results and plots.
-    We borrow the strategy from the integration test: use real temporary files
-    because FastAPI's FileResponse works best with real paths.
     """
     job_id = "download-test-job"
     
     # 1. Setup a "Completed" Job
-    # We use tmp_path to create real dummy files for the server to find
     results_file = tmp_path / f"{job_id}_results.csv"
     plot_file = tmp_path / f"{job_id}_umap_plot.png"
     
@@ -174,7 +172,6 @@ def test_download_endpoints(client, tmp_path):
     plot_file.write_bytes(b"fake_image_data")
     
     # 2. Inject this job into the Global JOBS dict
-    # We point the 'csv_path' to our real temp file
     JOBS[job_id] = {
         "status": "completed",
         "result": {
@@ -182,9 +179,8 @@ def test_download_endpoints(client, tmp_path):
         }
     }
 
-    # 3. We need to patch the CFG so the API looks for the plot in tmp_path
-    # The API looks for plot at: os.path.join(CFG.paths.data_inference_dir, ...)
-    with patch("src.arginator_protein_classifier.backend.CFG") as mock_cfg:
+    # 3. Patch CFG without 'src.'
+    with patch("arginator_protein_classifier.backend.CFG") as mock_cfg:
         mock_cfg.paths.data_inference_dir = str(tmp_path)
 
         # --- Test CSV Download ---
