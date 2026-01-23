@@ -158,3 +158,54 @@ def test_process_file_task_failure():
     
     assert JOBS[job_id]["status"] == "failed"
     assert "error" in JOBS[job_id]
+
+def test_download_endpoints(client, tmp_path):
+    """
+    Test downloading results and plots.
+    We borrow the strategy from the integration test: use real temporary files
+    because FastAPI's FileResponse works best with real paths.
+    """
+    job_id = "download-test-job"
+    
+    # 1. Setup a "Completed" Job
+    # We use tmp_path to create real dummy files for the server to find
+    results_file = tmp_path / f"{job_id}_results.csv"
+    plot_file = tmp_path / f"{job_id}_umap_plot.png"
+    
+    results_file.write_bytes(b"protein,score\nA,0.99")
+    plot_file.write_bytes(b"fake_image_data")
+    
+    # 2. Inject this job into the Global JOBS dict
+    # We point the 'csv_path' to our real temp file
+    JOBS[job_id] = {
+        "status": "completed",
+        "result": {
+            "csv_path": str(results_file)
+        }
+    }
+
+    # 3. We need to patch the CFG so the API looks for the plot in tmp_path
+    # The API looks for plot at: os.path.join(CFG.paths.data_inference_dir, ...)
+    with patch("src.arginator_protein_classifier.backend.CFG") as mock_cfg:
+        mock_cfg.paths.data_inference_dir = str(tmp_path)
+
+        # --- Test CSV Download ---
+        response_csv = client.get(f"/download/{job_id}")
+        assert response_csv.status_code == 200
+        # Check if "text/csv" is IN the header (handles the extra "; charset=utf-8")
+        assert "text/csv" in response_csv.headers["content-type"]
+        assert response_csv.content == b"protein,score\nA,0.99"
+
+        # --- Test Plot Download ---
+        response_plot = client.get(f"/download_plot/{job_id}")
+        assert response_plot.status_code == 200
+        assert response_plot.headers["content-type"] == "image/png"
+        assert response_plot.content == b"fake_image_data"
+
+def test_download_not_ready(client):
+    """Test downloading a job that is still processing."""
+    job_id = "processing-job"
+    JOBS[job_id] = {"status": "processing"}
+    
+    response = client.get(f"/download/{job_id}")
+    assert response.status_code == 400 # Bad Request
