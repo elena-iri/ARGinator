@@ -454,9 +454,10 @@ We used the following services:
 > *We used the compute engine to run our ... . We used instances with the following hardware: ... and we started the*
 > *using a custom container: ...*
 >
-> Answer:
 
---- question 18 fill here ---
+Answer:
+
+Although we explored creating VMs with different configs and loading different deep-learning images onto them, we landed on training using Vertex AI, which allocated the needed compute for the training runs. We could then start instances on here from our training docker image, that was uploaded to the artifact registry, ensuring that the training environment was isolated and reproducible. The instance that we do have on the Compute Engine service (but is paused) is a machine type: e2-medium (2 vCPUs, 4 GB memory), as GPU accelerated computing was not needed for training in our case. Similarly, for inference we used Cloud Runs where we first uploaded images for backend and frontend and then deployed these as Cloud Run services.
 
 ### Question 19
 
@@ -486,7 +487,8 @@ Answer:
 > **Upload 1-2 images of your GCP cloud build history, so we can see the history of the images that have been build in**
 > **your project. You can take inspiration from [this figure](figures/build.png).**
 >
-> Answer:
+
+Answer:
 
 <img width="596" height="148" alt="image" src="https://github.com/user-attachments/assets/60718d9e-6ce3-49ad-be15-02c828cf6f20" />
 
