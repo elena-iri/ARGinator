@@ -618,9 +618,14 @@ We implemented the frontend for user to have an easy way of processing and conve
 > Example:
 > *The biggest challenges in the project was using ... tool to do ... . The reason for this was ...*
 >
-> Answer:
 
---- question 30 fill here ---
+Answer:
+
+Some of the most significant struggles in this project was the steep learning curve associated with the Google Cloud Platform (GCP), not making architechtural decisions early on and ripple of effect of creating integrations.
+
+Although some of the group members had some experience with other Cloud Computing platforms this was all of our first times in navigating the specific ecosystem of Google Cloud Platform. For us it involved a lot of trial-and-error and often required deep dives into the logs until things were working properly. There was a lot to learn in this section and although it was difficult to get things running we also felt that we picked some very relevant skills and experience to carry on later in work or academic settings.
+
+Another struggle was that we did not have early foresight about what we wanted to achieve with the project overall but instead looked at the tasks on the checklist and attempted to tick them off one-by-one rather than planning the architechture more holistically. It could have been beneficial to get a better understanding of how they work together before continuing on tasks, which could have prevented some conflicts between e.g. DVC and the cloud storage buckets and the model registry in WandB regarding what the "source of truth" should be. We also often experienced that some features were not fully compatible with one another such as Typer and Hydra and that there had to be some work arounds in order to get the best of both worlds. In retrospect, having some time dedicated to architechtural planning could have smoothed some of these integrations for the team.
 
 ### Question 31
 
