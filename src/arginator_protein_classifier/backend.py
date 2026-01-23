@@ -1,20 +1,21 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse
-from fastapi.concurrency import run_in_threadpool
-import uvicorn
 import os
 import shutil
 import uuid
-import pandas as pd
-from hydra import compose, initialize
-from omegaconf import DictConfig
-from hydra.core.global_hydra import GlobalHydra
 from contextlib import asynccontextmanager
 
+import pandas as pd
+import uvicorn
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse
+from hydra import compose, initialize
+from hydra.core.global_hydra import GlobalHydra
+from omegaconf import DictConfig
+
 # --- IMPORTS ---
-from src.arginator_protein_classifier.convertfa import load_t5_model, run_conversion
-from src.arginator_protein_classifier.inference import run_inference
-from src.arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
+from arginator_protein_classifier.convertfa import load_t5_model, run_conversion
+from arginator_protein_classifier.inference import run_inference
+from arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
 
 # Global variables
 MODEL = None

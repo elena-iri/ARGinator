@@ -1,55 +1,85 @@
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import patch, MagicMock
-from omegaconf import OmegaConf
 import torch
-from arginator_protein_classifier.evaluate import evaluate
 
-@patch("arginator_protein_classifier.evaluate.get_dataloaders")           # Becomes Arg 3
-@patch("arginator_protein_classifier.evaluate.torch.load")                # Becomes Arg 2
-@patch("arginator_protein_classifier.evaluate.Model")                     # Becomes Arg 1
-@patch("arginator_protein_classifier.evaluate.DEVICE", torch.device("cpu")) # No Arg
-def test_evaluate(mock_model_class, mock_torch_load, mock_get_dataloaders):
+from arginator_protein_classifier.train import evaluate
+
+
+def test_evaluate_metrics():
     """
-    Test the evaluation script.
+    Test the evaluate() helper function from train.py.
+    We mock the model and dataloader to return known values and check if 
+    accuracy/precision/recall/f1 are calculated correctly.
     """
-    # 1: Config
-    cfg = OmegaConf.create({
-        "experiment": {
-            "dropout_rate": 0.1,
-            "batch_size": 2,
-        },
-        "paths": {
-            "data": "dummy/path",
-            "model_filename": "dummy_model.pth"
-        }
-    })
-
-    # 2: Mock the Model
-    # Now 'mock_model_class' actually holds the Model class mock
-    mock_model_instance = MagicMock()
-    mock_model_class.return_value = mock_model_instance
     
-    # Ensure model.to(DEVICE) returns the model itself
-    mock_model_instance.to.return_value = mock_model_instance
-
-    # Setup the forward pass return value
-    fake_prediction = torch.tensor([[0.1, 0.9], [0.8, 0.2]])
-    mock_model_instance.return_value = fake_prediction
-
-    # 3: Mock Data
-    fake_img = torch.randn(2, 1024)
-    fake_target = torch.tensor([1, 0])
+    # 1. Mock the Model
+    mock_model = MagicMock()
     
-    mock_loader = MagicMock()
-    mock_loader.__iter__.return_value = [(fake_img, fake_target)]
+    # Define what the model 'predicts' (Logits)
+    # Batch size = 2, Classes = 2
+    # Sample 0: [0.1, 0.9] -> Argmax = 1 (Predicted Class 1)
+    # Sample 1: [0.8, 0.2] -> Argmax = 0 (Predicted Class 0)
+    mock_logits = torch.tensor([[0.1, 0.9], [0.8, 0.2]])
     
-    # Now 'mock_get_dataloaders' actually holds the Dataloader function mock
-    mock_get_dataloaders.return_value = (None, None, mock_loader)
+    # Configure the mock to return these logits when called: model(x)
+    mock_model.return_value = mock_logits
 
-    # 4: Run
-    evaluate.__wrapped__(cfg)
+    # 2. Create Dummy Data
+    # Inputs (random, doesn't matter as model is mocked)
+    fake_inputs = torch.randn(2, 1024)
+    
+    # Targets (Ground Truth)
+    # Sample 0: 1 (Match)
+    # Sample 1: 0 (Match)
+    # This scenario represents 100% Accuracy
+    fake_targets = torch.tensor([1, 0])
+    
+    # Mock Dataloader (Iterable list of batches)
+    mock_dataloader = [(fake_inputs, fake_targets)]
 
-    # 5: Assertions
-    assert mock_model_instance.to.called
-    assert mock_model_instance.eval.called
-    assert mock_model_instance.called
+    # 3. Execution
+    device = torch.device("cpu")
+    
+    # We test the "binary" average method
+    metrics = evaluate(mock_model, mock_dataloader, device, average_method="binary")
+
+    # 4. Assertions
+    
+    # Ensure model was put in eval mode
+    mock_model.eval.assert_called_once()
+    
+    # Check Metrics (Should be perfect)
+    assert metrics["accuracy"] == 1.0
+    assert metrics["f1"] == 1.0
+    assert metrics["precision"] == 1.0
+    assert metrics["recall"] == 1.0
+    
+    # Check that logits and targets were passed through (for ROC plotting)
+    assert torch.equal(metrics["logits"], mock_logits)
+    assert torch.equal(metrics["targets"], fake_targets)
+
+def test_evaluate_multiclass_mismatch():
+    """
+    Test evaluate with a mismatch to ensure metrics calculate correctly
+    even when predictions are wrong.
+    """
+    mock_model = MagicMock()
+    
+    # Prediction: [Class 1, Class 0]
+    # We simulate a model that is completely wrong (swapped classes)
+    mock_logits = torch.tensor([[0.1, 0.9], [0.8, 0.2]]) 
+    mock_model.return_value = mock_logits
+
+    # Ground Truth: [Class 0, Class 1]
+    # - Sample 0: True 0, Pred 1 (Wrong)
+    # - Sample 1: True 1, Pred 0 (Wrong)
+    # This ensures both classes exist in targets (avoids ZeroDivision warning)
+    fake_targets = torch.tensor([0, 1])
+    
+    mock_dataloader = [(torch.randn(2, 10), fake_targets)]
+    
+    metrics = evaluate(mock_model, mock_dataloader, torch.device("cpu"), average_method="macro")
+    
+    # Since both predictions are wrong, accuracy should be 0.0
+    assert metrics["accuracy"] == 0.0

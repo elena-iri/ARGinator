@@ -29,7 +29,7 @@ dependencies = [
     "loguru>=0.7.3",
     "matplotlib>=3.10.8",
     "pandas>=2.3.3",
-    "pathspec<0.12.0",
+    "pathspec>=0.12.0",
     "pytorch-lightning>=2.6.0",
     "rich>=14.2.0",
     "scikit-learn>=1.8.0",
@@ -74,10 +74,6 @@ name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
-[tool.ruff]
-line-length = 120
-lint.select =["I"]
-
 [tool.coverage.run]
 omit = ["tests/*"]
 
@@ -90,3 +86,19 @@ evaluate = "arginator_protein_classifier.evaluate:evaluate"
 
 # usage: uv run data
 data = "arginator_protein_classifier.data:main"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    # Ignore specific Swig warnings from upstream libs
+    "ignore:.*builtin type SwigPyPacked has no __module__ attribute.*:DeprecationWarning",
+    "ignore:.*builtin type SwigPyObject has no __module__ attribute.*:DeprecationWarning",
+    "ignore:.*builtin type swigvarlink has no __module__ attribute.*:DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 120
+lint.select =["I"]
+src = ["src"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["arginator_protein_classifier"]

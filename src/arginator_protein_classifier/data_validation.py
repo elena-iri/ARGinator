@@ -1,12 +1,13 @@
-import sys
-import h5py
-import numpy as np
-import matplotlib.pyplot as plt
-from pathlib import Path
 import hashlib
-from collections import defaultdict
 import logging
 import os
+import sys
+from collections import defaultdict
+from pathlib import Path
+
+import h5py
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Configuration
 DATA_DIR = Path(os.getenv("DATA_PATH", ".data"))

@@ -1,10 +1,10 @@
-import time
-import torch
-import h5py
-from transformers import T5EncoderModel, T5Tokenizer
 import os
+import time
 
+import h5py
+import torch
 from huggingface_hub import hf_hub_download
+from transformers import T5EncoderModel, T5Tokenizer
 
 # Check device once on import
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

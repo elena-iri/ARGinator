@@ -1,10 +1,12 @@
 import h5py
+import matplotlib
 import numpy as np
 import pandas as pd
 import umap
-import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 
 class UMAPEmbeddingVisualizer:
     """Visualize protein embeddings using UMAP dimensionality reduction."""

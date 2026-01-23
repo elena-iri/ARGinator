@@ -1,14 +1,16 @@
 import logging
 import os
-import torch
-import h5py
-import pandas as pd
-import hydra
 from pathlib import Path
+
+import h5py
+import hydra
+import pandas as pd
+import torch
 from dotenv import load_dotenv
-from torch.utils.data import DataLoader, Dataset
-from arginator_protein_classifier.model import Lightning_Model
 from omegaconf import DictConfig, ListConfig
+from torch.utils.data import DataLoader, Dataset
+
+from arginator_protein_classifier.model import Lightning_Model
 
 torch.serialization.add_safe_globals([DictConfig, ListConfig])
 log = logging.getLogger(__name__)
