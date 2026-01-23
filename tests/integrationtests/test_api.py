@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pandas as pd
 import pytest
+from fastapi.testclient import TestClient
 
 # --- IMPORT APP ---
 # Notice we import from the package name, not 'src'
 from arginator_protein_classifier.backend import JOBS, app, process_file_task
-from fastapi.testclient import TestClient
 
 # --- FIXTURES ---
 

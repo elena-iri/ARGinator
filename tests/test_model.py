@@ -1,5 +1,6 @@
 import pytest
 import torch
+
 from arginator_protein_classifier.model import Lightning_Model
 
 # Define constants matching your project structure

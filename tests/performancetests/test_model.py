@@ -6,9 +6,8 @@ from pathlib import Path
 
 import pytest
 import torch
-from dotenv import load_dotenv
-
 import wandb
+from dotenv import load_dotenv
 
 print(os.listdir())
 
