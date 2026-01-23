@@ -12,9 +12,9 @@ from hydra.core.global_hydra import GlobalHydra
 from contextlib import asynccontextmanager
 
 # --- IMPORTS ---
-from src.arginator_protein_classifier.convertfa import load_t5_model, run_conversion
-from src.arginator_protein_classifier.inference import run_inference
-from src.arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
+from arginator_protein_classifier.convertfa import load_t5_model, run_conversion
+from arginator_protein_classifier.inference import run_inference
+from arginator_protein_classifier.umap_plot import UMAPEmbeddingVisualizer
 
 # Global variables
 MODEL = None
