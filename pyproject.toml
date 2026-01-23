@@ -98,3 +98,11 @@ filterwarnings = [
     "ignore:.*builtin type SwigPyObject has no __module__ attribute.*:DeprecationWarning",
     "ignore:.*builtin type swigvarlink has no __module__ attribute.*:DeprecationWarning",
 ]
+
+[tool.ruff]
+# 1. Tell Ruff that your code lives in the 'src' folder
+src = ["src"]
+
+[tool.ruff.lint.isort]
+# 2. Force Ruff to treat your package as First-Party everywhere
+known-first-party = ["arginator_protein_classifier"]
