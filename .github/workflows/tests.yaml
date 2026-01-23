@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - development
+      - unit_tests # for testing
   pull_request:
     branches:
       - main
@@ -55,4 +56,6 @@ jobs:
 
       - name: Run tests & coverage
         run: |
-          uv run pytest --cov=src --cov-report=term-missing tests/
+          uv run pytest --cov=src --cov-report=term-missing tests/ \
+            --ignore=tests/performancetests \
+            --ignore=tests/integrationtests
