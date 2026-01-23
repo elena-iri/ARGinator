@@ -476,7 +476,10 @@ Answer:
 >
 > Answer:
 
---- question 20 fill here ---
+<img width="845" height="401" alt="image" src="https://github.com/user-attachments/assets/e983954c-2e52-4cba-a082-cbb997242eaf" />
+
+<img width="986" height="588" alt="image" src="https://github.com/user-attachments/assets/d389864e-d0b1-406b-bc6a-21e83137a0ce" />
+
 
 ### Question 21
 
@@ -485,7 +488,7 @@ Answer:
 >
 > Answer:
 
---- question 21 fill here ---
+<img width="596" height="148" alt="image" src="https://github.com/user-attachments/assets/60718d9e-6ce3-49ad-be15-02c828cf6f20" />
 
 ### Question 22
 
@@ -500,7 +503,7 @@ Answer:
 >
 
 Answer:
-Yes we managed to train our model in the cloud on Vertex AI, there was not too much reasoning into choosing it over the compute engine but since our model training was relatively fast we thought it would be cleaner to just have training be started and ended automatically through vertex, rather than first initialising the VM and then running something on it. We created a `config_vertex.yaml` file to pass when runnning the custom job, that points to the image uri and has the worker specs that we needed.
+Yes we managed to train our model in the cloud on Vertex AI Custom Training Jobs, there was not too much reasoning into choosing it over the compute engine but since our model training was relatively fast we thought it would be cleaner to just have training be started and ended automatically through vertex, rather than first initialising the VM and then running something on it. Additionally, it provides a fully managed, serverless workflow. We created a `config_vertex.yaml` file to pass when runnning the custom job, that points to the image uri for training and has the worker specs that were needed: machine type: n1-standard-4. We submitted the jobs via the `gcloud` CLI, passing as arguments the entrypoint script. The job would also read the datasets straight from the Cloud Storage bucket and save resulting model artifacts back to the bucket as well as storing in the WandB registry.
 
 ## Deployment
 
