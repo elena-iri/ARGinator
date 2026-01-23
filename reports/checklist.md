@@ -62,43 +62,42 @@ will check the repositories and the code to verify your answers.
     are using (M2+M6)
 * [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7) TOMS **DO THIS AT THE VERY END**
 * [✅] Do a bit of code typing and remember to document essential parts of your code (M7)
-* [✅] Setup version control for your data or part of your data (M8) **optional**
+* [✅] Setup version control for your data or part of your data (M8)
 * [✅] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [✅] Construct one or multiple docker files for your code (M10) 
 * [✅] Build the docker files locally and make sure they work as intended (M10)
 * [✅] Write one or multiple configurations files for your experiments (M11) 
 * [✅] Used Hydra to load the configurations and manage your hyperparameters (M11)
-* [ ] Use profiling to optimize your code (M12) - TOMS
-* [✅] Use logging to log important events in your code (M14) MAX 
-* [✅] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14) Elena 
-* [✅] Consider running a hyperparameter optimization sweep (M14) Elena
-      https://wandb.ai/eleni-iriondo2-danmarks-tekniske-universitet-dtu/arginator_protein_classifier/reports/Hyperparameter-sweep--VmlldzoxNTYxMzY1Mw
-* [✅] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15) Optional Claudio
+* [ ] Use profiling to optimize your code (M12) 
+* [✅] Use logging to log important events in your code (M14)  
+* [✅] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)  
+* [✅] Consider running a hyperparameter optimization sweep (M14)
+* [✅] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
 
-* [✅] Write unit tests related to the data part of your code (M16) - MAX
-* [✅] Write unit tests related to model construction and or model training (M16) - MAX
-* [✅] Calculate the code coverage (M16) - MAX
-* [✅] Get some continuous integration running on the GitHub repository (M17) Max
-* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17) Max
-* [✅] Add a linting step to your continuous integration (M17) Elena 
-* [✅] Add pre-commit hooks to your version control setup (M18) Elena 
-* [✅] Add a continues workflow that triggers when data changes (M19) Free 
-* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) Elena 
-* [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21) Claudio 
-* [ ] Create a trigger workflow for automatically building your docker images (M21) Claudio 
-* [✅] Get your model training in GCP using either the Engine or Vertex AI (M21) Claudio 
-* [✅] Create a FastAPI application that can do inference using your model (M22) Toms
-* [✅] Deploy your model in GCP using either Functions or Run as the backend (M23) Toms 
-* [✅] Write API tests for your application and setup continues integration for these (M24) Toms 
-* [✅] Load test your application (M24) - Toms 
-* [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25) **optional** 
-* [✅] Create a frontend for your API (M26) Toms
+* [✅] Write unit tests related to the data part of your code (M16)
+* [✅] Write unit tests related to model construction and or model training (M16) 
+* [✅] Calculate the code coverage (M16)
+* [✅] Get some continuous integration running on the GitHub repository (M17)
+* [✅] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
+* [✅] Add a linting step to your continuous integration (M17)  
+* [✅] Add pre-commit hooks to your version control setup (M18)  
+* [✅] Add a continues workflow that triggers when data changes (M19) 
+* [ ] Add a continues workflow that triggers when changes to the model registry is made (M19) 
+* [✅] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)  
+* [ ] Create a trigger workflow for automatically building your docker images (M21)  
+* [✅] Get your model training in GCP using either the Engine or Vertex AI (M21)  
+* [✅] Create a FastAPI application that can do inference using your model (M22) 
+* [✅] Deploy your model in GCP using either Functions or Run as the backend (M23)  
+* [✅] Write API tests for your application and setup continues integration for these (M24)  
+* [✅] Load test your application (M24) 
+* [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25) 
+* [✅] Create a frontend for your API (M26) 
 
 ### Week 3
 
-* [✅] Check how robust your model is towards data drifting (M27) Elena
+* [✅] Check how robust your model is towards data drifting (M27) 
 * [ ] Deploy to the cloud a drift detection API (M27)
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [✅] Setup cloud monitoring of your instrumented application (M28)
@@ -111,10 +110,10 @@ will check the repositories and the code to verify your answers.
 
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
+* [✅] Revisit your initial project description. Did the project turn out as you wanted?
 * [ ] Create an architectural diagram over your MLOps pipeline
 * [✅] Make sure all group members have an understanding about all parts of the project
-* [ ] Uploaded all your code to GitHub
+* [✅] Uploaded all your code to GitHub
 
 ## Group information
 
@@ -225,7 +224,7 @@ We used the ruff libary for code linting and formatting. We also used Typer for 
 
 Answer:
 
-In total we implemented 4 tests. We are primarily testing the train, evaluate, data processing and api scripts as those are the most critical in our application. The tests and code coverage are documented in the `TESTS.md` file in the tests folder.
+In total we implemented 4 tests. We are primarily testing the train, evaluate, data processing and api scripts as those are the most critical in our application. We include more general tests as well as performance or integration tests. The tests and code coverage are documented in the `TESTS.md` file in the docs folder.
 
 ### Question 8
 
@@ -379,15 +378,17 @@ To reproduce a past experiment, one would simply have to checkout the specific g
 Answer:
 <img width="773" height="650" alt="image" src="https://github.com/user-attachments/assets/3b816abb-eb8b-496b-b765-cb28e79200b6" />
 
-As seen in the above image we are tracking the basic training metrics such as the loss, recall and precision during a training run that inform us whether or not the model is improving over epochs.
+As seen in the above image we are tracking the basic training metrics such as the loss, recall and precision during a training run that inform us whether or not the model is improving over epochs. We log both training and validation metrics. For training we calculated at each step, whilst for validation once per epoch. Test metrics wer calculated only on the final model. In addition, model artifacts were saved at the end of training to our model registry.
 
 <img width="640" height="480" alt="media_images_roc_curve_10_d2d2d0cc80e2366999c7" src="https://github.com/user-attachments/assets/a37a2ecd-3d25-4851-84ce-70eec32fa365" />
 
-We also create and store Receiver Operating Characteristic (ROC) curves using matplotlib at the end of training and upload these as a .png to WandB, to understand if the model is just randomly guessing or making reasonable classifications. 
+We also create and store Receiver Operating Characteristic (ROC) curves using matplotlib at the end of training and upload these as a .png to WandB, to understand if the model is just randomly guessing or making reasonable classifications. This curve is very relevant in binary classifiers, as it can show us how our model balances TPR (sensitivity) and FPR (1 minus specificity). 
 
 <img width="874" height="586" alt="image" src="https://github.com/user-attachments/assets/806fa7e1-29de-49fc-8023-71c656f4fa13" />
 
-We also created a hyperparameter sweep to see which hyperparameters most significantly affect the validation loss, we saw that the most drastic differences are seen only when the batch size is lowered but that other parameters (in the ranges we tested) did not effect the loss to as large an extent.
+We also created a hyperparameter sweep to see which hyperparameters most significantly affect the validation loss, we saw that the most drastic differences are seen only when the batch size is lowered but that other parameters (in the ranges we tested) did not affect the loss to as large an extent. This shows our modle is very robust.
+The full report can be accessed on: https://api.wandb.ai/links/eleni-iriondo2-danmarks-tekniske-universitet-dtu/i36jtbun
+
 
 ### Question 15
 
@@ -402,7 +403,8 @@ We also created a hyperparameter sweep to see which hyperparameters most signifi
 >
 
 Answer:
-For our project we developed 3 docker images: one for training, one for the backend of inference and one for the fronend of inference. To then run inference on GCP Cloud Run we would upload and build the backend and frontend images and then deploy them. To run training on GCP through Vertex AI we would upload and build the training dockerfile. As an example to run the training docker image: `docker run train:latest experiment.lr=1e-3 experiment.dropout_rate=0.3`. Link to the docker file: https://github.com/elena-iri/ARGinator/blob/main/dockerfiles/train.dockerfile 
+
+For our project we developed 3 docker images: one for training, one for the backend of inference and one for the fronend of inference. To then run inference on GCP Cloud Run we would upload and build the backend and frontend images and then deploy them as separate services. To run training on GCP through Vertex AI we would upload and build the training dockerfile. In this way, all dependencies and configuration were encapsulated, allowing for reproducible experiments on other machines. As an example to run the training docker image: `docker run train:latest experiment.lr=1e-3 experiment.dropout_rate=0.3`. Link to the docker file: https://github.com/elena-iri/ARGinator/blob/main/dockerfiles/train.dockerfile 
 
 ### Question 16
 
@@ -417,7 +419,8 @@ For our project we developed 3 docker images: one for training, one for the back
 >
 > Answer:
 
---- question 16 fill here ---
+We used several different strategies for debugging. A simple solution we sometimes employed for small checks were print statements. When bigger issues were at hand we made use of the python debugger tool. If both failed, we resorted to checking the code with different generative AI tools such as GitHub Copilot, Gemini and ChatGPT. Naturally, having another human check the code was also quite useful and accessible in a team setting. Regarding profiling, we did not carry out this step as our pre-processing and training scripts ran significantly fast already, so we opted to optimise / complete other parts of the project.
+
 
 ## Working in the cloud
 
