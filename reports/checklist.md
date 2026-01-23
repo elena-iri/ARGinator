@@ -240,25 +240,32 @@ In total we implemented 4 tests. We are primarily testing the train, evaluate, d
 
 Answer:
 
-*Generated via `pytest-cov`*
+From tests docs:
+Generated via pytest-cov on Windows (Python 3.12.10)
 
-The overall project test coverage is **68%**. Below is the detailed breakdown by module:
+The overall project test coverage is currently 38%. While core backend and training logic is well-covered, several auxiliary and frontend modules remain untested. Below is the detailed breakdown by module:
 
-| File | Statements | Missed | Coverage | Missing Lines |
-| :--- | :---: | :---: | :---: | :--- |
-| `data.py` | 171 | 72 | **58%** | 37, 47, ... , 298-329 |
-| `model.py` | 88 | 30 | **66%** | 61-62, 86-105, 108-119 |
-| `train.py` | 76 | 4 | **95%** | 109-110, 139, 174 |
-| `__init__.py` | 0 | 0 | **100%** | - |
-| **TOTAL** | **335** | **106** | **68%** | |
-
-*Analysis of Missing Lines*
-* **`data.py` (58%)**: The coverage is lower because `test_data.py` focuses on the **Binary** task flow.
-    * **Missing Logic:** The `multiclass` labeling logic in `_labeling` (lines 91-102) and specific error handling branches (e.g., file read errors) are not triggered.
-    * **Hydra Entry Point:** The `main()` function and CLI entry block (lines 298-334) are not executed by the unit tests.
-* **`model.py` (66%)**:
-    * **Lightning Methods:** The tests check `forward` and `backward`, but they do not execute `training_step` (86-105) or `validation_step` (108-119). These methods are usually called by the Lightning Trainer, which we mocked in `test_train.py`. To increase this, we would need to manually call `model.training_step()` in a unit test.
-* **`train.py` (95%)**: High coverage. The few missing lines correspond to specific `multiclass` ROC plotting branches (since the test used binary data) or specific fallback logic for dataloaders.
+File	Statements	Missed	Coverage	Missing Lines
+src\arginator_protein_classifier\backend.py	121	18	85%	38, 60, 66-71, 93, 100, 112, 173-174, 201, 210, 223, 226, 233, 239
+src\arginator_protein_classifier\train.py	99	9	91%	24-26, 34-35, 137-138, 188, 224
+src\arginator_protein_classifier\model.py	87	32	63%	39-40, 64-88, 91-102, 114-115, 128-134, 138
+src\arginator_protein_classifier\data.py	172	71	59%	44, 54, 56-58, 98-109, 120-121, 129, 146-147, 231-237, 241-268, 273, 276, 279, 288-320, 327
+src\arginator_protein_classifier\inference.py	90	65	28%	24-33, 35, 37, 47-125, 143-146, 153
+src\arginator_protein_classifier\umap_plot.py	76	60	21%	22-29, 33-40, 48-52, 61-68, 72-79, 89-111, 122-133, 138-147
+src\arginator_protein_classifier\convertfa.py	76	62	18%	18-55, 60-70, 78-136
+src\arginator_protein_classifier\data_drift.py	163	163	0%	All lines (2-347)
+src\arginator_protein_classifier\data_validation.py	116	116	0%	All lines (1-175)
+src\arginator_protein_classifier\frontend.py	69	69	0%	All lines (1-118)
+src\arginator_protein_classifier\__init__.py	0	0	100%	-
+src\arginator_protein_classifier\visualize.py	0	0	100%	-
+TOTAL	1069	665	38%	
+Analysis of Coverage
+High Coverage (backend.py: 85%, train.py: 91%): The critical API endpoints, job management logic, and training loops are thoroughly tested. Missing lines in backend.py are mostly error-handling branches (e.g., except Exception) that were not triggered during success-path testing.
+Moderate Coverage (model.py: 63%, data.py: 59%): The core model architecture and dataset logic are partially tested. The missing lines in model.py largely correspond to validation steps or specific property methods not used in the main training flow.
+Low/No Coverage:
+data_drift.py and data_validation.py are currently completely untested (0%), likely because these are standalone monitoring scripts not invoked by the core API or training tests.
+frontend.py (0%) contains UI logic (Streamlit/Gradio), which requires a different testing strategy (e.g., Selenium or Playwright) not yet implemented in the pytest suite.
+inference.py and convertfa.py have low coverage because the tests mock their main functions (run_inference, run_conversion) to avoid heavy computation, leaving the internal logic of those functions unverified by the current test suite.
 
 ### Question 9
 
