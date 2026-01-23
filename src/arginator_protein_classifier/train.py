@@ -1,10 +1,12 @@
 import logging
 import os
 from re import split
-from dotenv import load_dotenv
+
 import hydra
 import matplotlib.pyplot as plt
 import torch
+from dotenv import load_dotenv
+from google.cloud import secretmanager
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
@@ -17,7 +19,6 @@ import wandb
 from arginator_protein_classifier.data import TL_Dataset
 from arginator_protein_classifier.model import Lightning_Model
 
-from google.cloud import secretmanager
 
 def get_secret(project_id, secret_id, version_id="latest"):
     client = secretmanager.SecretManagerServiceClient()

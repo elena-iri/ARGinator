@@ -1,5 +1,7 @@
-from locust import HttpUser, task, between
 import random
+
+from locust import HttpUser, between, task
+
 
 class FastAPILoadTest(HttpUser):
     # Simulate users waiting between 1 and 3 seconds after each task

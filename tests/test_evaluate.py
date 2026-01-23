@@ -1,7 +1,9 @@
+from unittest.mock import MagicMock
+
 import pytest
 import torch
-from unittest.mock import MagicMock
 from arginator_protein_classifier.train import evaluate
+
 
 def test_evaluate_metrics():
     """

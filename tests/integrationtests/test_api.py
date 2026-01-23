@@ -1,13 +1,14 @@
-import pytest
 import os
 import shutil
-from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
+
 import pandas as pd
+import pytest
 
 # --- IMPORT APP ---
 # Notice we import from the package name, not 'src'
-from arginator_protein_classifier.backend import app, JOBS, process_file_task
+from arginator_protein_classifier.backend import JOBS, app, process_file_task
+from fastapi.testclient import TestClient
 
 # --- FIXTURES ---
 

@@ -1,11 +1,13 @@
-import os
-import time
-import torch
 import logging
-from pathlib import Path
+import os
 import sys
+import time
+from pathlib import Path
+
 import pytest
+import torch
 from dotenv import load_dotenv
+
 import wandb
 
 print(os.listdir())

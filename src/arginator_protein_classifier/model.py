@@ -12,6 +12,7 @@ from pytorch_lightning import LightningModule
 from torch import nn
 from torchmetrics import Accuracy, F1Score, Precision, Recall
 
+
 class Lightning_Model(LightningModule):
     def __init__(self, input_dim, output_dim, dropout_rate, loss_fn, optimizer_config) -> None:
         super().__init__()

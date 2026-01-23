@@ -1,10 +1,12 @@
-import pytest
-import torch
-import h5py
-import numpy as np
 import os
 from pathlib import Path
 from unittest.mock import patch
+
+import h5py
+import numpy as np
+import pytest
+import torch
+
 
 # IMPORTANT: We need to mock environment variables BEFORE importing data.py
 # because MyDataset loads them in __init__ or relies on dotenv.
@@ -17,6 +19,7 @@ def mock_env_vars(monkeypatch):
 
 # Now import the module under test
 from arginator_protein_classifier.data import get_dataloaders
+
 
 # HELPER FUNCTION
 def create_dummy_h5(folder, filename, num_samples=10):

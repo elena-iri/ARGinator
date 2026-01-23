@@ -1,11 +1,13 @@
+import os
+from unittest.mock import MagicMock, patch
+
 import pytest
 import torch
-import os
-from unittest.mock import patch, MagicMock
-from omegaconf import OmegaConf
 
 # Import the train function
 from arginator_protein_classifier.train import train
+from omegaconf import OmegaConf
+
 
 @patch("arginator_protein_classifier.train.ModelCheckpoint")     # 9. NEW: Mock Checkpoint Callback
 @patch("arginator_protein_classifier.train.wandb")               # 8. Mock global wandb module
