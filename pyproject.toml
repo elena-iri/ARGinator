@@ -74,10 +74,6 @@ name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
-[tool.ruff]
-line-length = 120
-lint.select =["I"]
-
 [tool.coverage.run]
 omit = ["tests/*"]
 
@@ -100,9 +96,9 @@ filterwarnings = [
 ]
 
 [tool.ruff]
-# 1. Tell Ruff that your code lives in the 'src' folder
+line-length = 120
+lint.select =["I"]
 src = ["src"]
 
 [tool.ruff.lint.isort]
-# 2. Force Ruff to treat your package as First-Party everywhere
 known-first-party = ["arginator_protein_classifier"]
