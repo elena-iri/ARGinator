@@ -1,30 +1,43 @@
-# Testing Documentation
+**Testing Documentation**
 
-This project uses `pytest` for unit and integration testing. The tests are divided into three categories: Data, Model Architecture, and Scripts (Training/Evaluation).
+This project uses pytest for unit and integration testing. The tests are divided into four categories: Data, Model Architecture, Training Scripts, and the FastAPI Backend.
 
-## 1. Data Tests (`tests/test_data.py`)
+## **1\. Data Tests (tests/test\_data.py)**
+
 *Tests the data ingestion pipeline, H5 file parsing, and DataLoader construction.*
 
 | Test Function | Description |
-| :--- | :--- |
-| `test_get_dataloaders` | **Integration Test.** Creates temporary dummy `.h5` files with specific naming conventions ("non" vs "protein") to verify that: <br> 1. The `Dataset` class parses H5 keys correctly. <br> 2. Labels are assigned correctly (0 or 1) based on filenames. <br> 3. `DataLoader` collates individual samples into batches of correct shape `[Batch_Size, 1024]`. |
+| :---- | :---- |
+| test\_get\_dataloaders | **Integration Test.** Creates temporary dummy .h5 files with specific naming conventions ("non" vs "protein") to verify that: 1\. The Dataset class parses H5 keys correctly. 2\. Labels are assigned correctly (0 or 1\) based on filenames. 3\. DataLoader collates individual samples into batches of correct shape \[Batch\_Size, 1024\]. |
 
-## 2. Model Tests (`tests/test_model.py`)
+## **2\. Model Tests (tests/test\_model.py)**
+
 *Tests the Neural Network architecture and mathematical correctness.*
 
 | Test Function | Description |
-| :--- | :--- |
-| `test_model_forward_shape` | **Parametrized Unit Test.** Runs the model with batch sizes `[1, 32, 64]`. Verifies that input tensor `[N, 1024]` results in output `[N, 2]` without crashing or producing NaNs. |
-| `test_model_backward` | **Smoke Test.** Runs a full forward and backward pass on dummy data to ensure gradients are calculated. Catches errors like broken computational graphs or detached tensors. |
-| `test_model_dropout_initialization` | **Unit Test.** Verifies the model can be initialized with different dropout rates (0.0 vs 0.5) without error. |
+| :---- | :---- |
+| test\_model\_forward\_shape | **Parametrized Unit Test.** Runs the model with batch sizes \[1, 32, 64\]. Verifies that input tensor \[N, 1024\] results in output \[N, 2\] without crashing or producing NaNs. |
+| test\_model\_backward | **Smoke Test.** Runs a full forward and backward pass on dummy data to ensure gradients are calculated. Catches errors like broken computational graphs or detached tensors. |
+| test\_model\_dropout\_initialization | **Unit Test.** Verifies the model can be initialized with different dropout rates (0.0 vs 0.5) without error. |
 
-## 3. Script Tests (`tests/test_train.py`, `tests/test_evaluate.py`)
+## **3\. Script Tests (tests/test\_train.py)**
+
 *Tests the orchestration logic, CLI arguments, and file saving. These tests use Mocks to avoid running heavy computations.*
 
 | Test Function | Description |
-| :--- | :--- |
-| `test_train` | **Mocked Logic Test.** bypasses the `@hydra.main` decorator to test the training loop. <br> - **Mocks:** `HydraConfig`, `plt`, `get_dataloaders`. <br> - **Verifies:** The training loop runs, the model file (`.pth`) is saved to disk, and the plotting function (`plt.savefig`) is triggered. |
-| `test_evaluate` | **Mocked Logic Test.** Tests the evaluation script. <br> - **Mocks:** `Model`, `torch.load`. <br> - **Verifies:** The script loads the config, reloads weights from disk, enters `eval()` mode, and correctly calculates accuracy on the test set. |
+| :---- | :---- |
+| test\_train | **Mocked Logic Test.** Bypasses the @hydra.main decorator to test the training loop logic. \- **Mocks:** HydraConfig, plt, get\_dataloaders. \- **Verifies:** The training loop runs to completion, the model checkpoint (.pth) is saved to disk, and the loss curve plotting function is triggered. |
+
+## **4\. API & Integration Tests (tests/integrationtests/test\_api.py)**
+
+*Tests the FastAPI backend, background task processing, and endpoint responses. High-performance components (T5 Model, UMAP) are mocked to ensure fast execution.*
+
+| Test Function | Description |
+| :---- | :---- |
+| test\_submit\_job\_endpoint | **Endpoint Test.** Verifies the /submit\_job endpoint. Checks that files are accepted, a Job ID is generated, the status is set to "processing," and a background task is scheduled. |
+| test\_process\_file\_task\_success | **Logic Test.** Directly invokes the background worker function process\_file\_task. \- **Mocks:** run\_conversion, run\_inference, UMAPEmbeddingVisualizer. \- **Verifies:** The full workflow (Convert $\\to$ Infer $\\to$ Plot) runs sequentially, the job status updates to "completed," and temporary input files are cleaned up via os.remove. |
+| test\_download\_endpoints | **Integration Test.** Creates real dummy files on disk to verify that /download/{job\_id} and /download\_plot/{job\_id} return the correct binary content and MIME types (text/csv, image/png). |
+| test\_get\_status | **State Test.** Verifies that the status endpoint returns the correct JSON state ("processing", "completed", "failed") for a given Job ID. |
 
 ## How to Run
 To run all tests:
@@ -36,7 +49,7 @@ To run a specific category (e.g., only model tests):
 ```bash
 uv run pytest tests/test_model.py
 ```
-**4\. Code Coverage Report**
+## **5\. Code Coverage Report**
 
 *Generated via pytest-cov on Windows (Python 3.12.10)*
 
