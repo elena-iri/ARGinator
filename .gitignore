@@ -180,3 +180,5 @@ outputs/
 wandb/
 /.data
 .models/
+models/
+gcp/
