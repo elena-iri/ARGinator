@@ -5,6 +5,7 @@ from re import split
 import hydra
 import matplotlib.pyplot as plt
 import torch
+import wandb
 from dotenv import load_dotenv
 from google.cloud import secretmanager
 from hydra.core.hydra_config import HydraConfig
@@ -15,7 +16,6 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from sklearn.metrics import RocCurveDisplay, accuracy_score, f1_score, precision_score, recall_score
 
-import wandb
 from arginator_protein_classifier.data import TL_Dataset
 from arginator_protein_classifier.model import Lightning_Model
 
