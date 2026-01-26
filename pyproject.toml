@@ -39,7 +39,7 @@ dependencies = [
     "transformers>=4.57.6",
     "typer==0.15.1",
     "umap-learn>=0.5.11",
-    "uvicorn==0.34.0",
+    "uvicorn==0.40.0",
     "wandb>=0.23.1",
     "python-multipart>=0.0.21",
     "google-cloud-run>=0.14.0",
