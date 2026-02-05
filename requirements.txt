@@ -745,7 +745,7 @@ urllib3==2.6.3
     #   geventhttpclient
     #   requests
     #   sentry-sdk
-uvicorn==0.34.0
+uvicorn==0.40.0
     # via arginator-protein-classifier
 vine==5.1.0
     # via
